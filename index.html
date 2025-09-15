@@ -7,12 +7,23 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/theme.js" defer></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            if (window.AOS) AOS.init({ duration: 600, once: true });
+        });
+    </script>
 </head>
 <body>
     <header>
         <div class="header-content">
             <h1>Burndown Chart</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Switch theme">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
     </header>
 
@@ -20,12 +31,11 @@
         <div class="background-grid"></div>
         <div class="home-content">
             <div class="logo-container">
-                <h1 class="logo">Burndown Chart</h1>
                 <p class="tagline">Monitoramento avançado de sprints com visualização em tempo real do progresso da equipe.</p>
             </div>
             
             <div class="features-grid">
-                <div class="feature-card">
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="0">
                     <i class="fas fa-chart-line feature-icon"></i>
                     <h3>Burndown Chart</h3>
                     <p>Visualize o progresso da sprint atual com gráficos interativos e métricas detalhadas.</p>
@@ -34,23 +44,7 @@
                     </a>
                 </div>
 
-                <div class="feature-card">
-                    <i class="fas fa-history feature-icon"></i>
-                    <h3>Histórico</h3>
-                    <p>Acompanhe a evolução das sprints anteriores e analise o desempenho da equipe ao longo do tempo.</p>
-                    <a href="pages/history.html" class="btn btn-secondary">
-                        <i class="fas fa-history"></i>&nbsp;&nbsp;Ver Histórico
-                    </a>
-                </div>
 
-                <div class="feature-card">
-                    <i class="fas fa-chart-bar feature-icon"></i>
-                    <h3>Métricas</h3>
-                    <p>Analise métricas detalhadas de produtividade, velocidade e eficiência da equipe.</p>
-                    <a href="pages/metrics.html" class="btn btn-secondary">
-                        <i class="fas fa-chart-bar"></i>&nbsp;&nbsp;Ver Métricas
-                    </a>
-                </div>
             </div>
         </div>
     </main>

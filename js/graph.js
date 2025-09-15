@@ -1,65 +1,96 @@
 // Variável global para o gráfico
 let burndownChart = null;
 
-// Cores do tema
-const theme = {
-    primary: '#FF4B4B',    // Vermelho
-    secondary: '#4B4BFF',  // Azul
-    accent: '#9B4DCA',     // Roxo
-    background: '#FFFFFF', // Branco
-    surface: '#F5F5F5',   // Cinza claro
-    text: '#2D2D2D',      // Texto escuro
-    textSecondary: '#666666',
-    border: '#E0E0E0',
-    success: '#4CAF50',   // Verde
-    warning: '#FFC107',   // Amarelo
-    error: '#F44336'      // Vermelho erro
-};
-
-// Chaves para demo (APENAS SIMULAÇÃO)
-const DEMO_KEYS = {
-    'sprint-1': {
-        key: '7fd281b264c39b6b3f17b478937b1d54',
-        token: 'ATTAf8b7fc8e40203d0aa36b3ff8f9dc13ebca74dc1c78f44551a3578a0e5af2bccd62FB2E29',
-        board: '64f7a3c2d0cbad8763f9a4e1'
-    },
-    'sprint-2': {
-        key: '8e392c7a5f1d4b6a9c8e2d1f3a5b7c9d',
-        token: 'ATTAf9c8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3',
-        board: '75e4b2d1c9a8f7e6d5c4b3a2f1e0d9c8'
-    },
-    'sprint-3': {
-        key: '3c7f9e2a1b5d8f4e6c9a2d7b3f8e1c5a',
-        token: 'ATTAc3f7b9e2a1d5f8e4c6a9d2b7f3e8c1a5f9d2b7e3c8a1f5d9e2c7b4a8f1e6d3c9b2a7f5e8c1',
-        board: '89a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5'
-    }
-};
-
-// Função para obter o ID da sprint da URL
-function getSprintIdFromUrl() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('sprint') || 'sprint-1';
+// Cores do tema via variáveis CSS
+function readCssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-// Função para carregar dados simulados baseado na sprint
-async function loadSimulatedData(sprintId) {
-    try {
-        let dataFile = 'simulatedData.json'; // Sprint 1 (default)
-        
-        if (sprintId === 'sprint-2') {
-            dataFile = 'simulatedDataSprint2.json';
-        } else if (sprintId === 'sprint-3') {
-            dataFile = 'simulatedDataSprint3.json';
+function getThemeColors() {
+    return {
+        primary: readCssVar('--primary-color') || '#3b82f6',
+        secondary: readCssVar('--secondary-color') || '#10b981',
+        accent: readCssVar('--accent-color') || '#8b5cf6',
+        background: readCssVar('--background-color') || '#ffffff',
+        surface: readCssVar('--surface-color') || '#f8fafc',
+        text: readCssVar('--text-color') || '#1e293b',
+        textSecondary: readCssVar('--text-secondary') || '#64748b',
+        border: readCssVar('--border-color') || '#e2e8f0'
+    };
+}
+
+let theme = getThemeColors();
+
+// Utilitário para converter hex em rgb
+function hexToRgb(hex) {
+    const sanitized = hex.replace('#', '');
+    const bigint = parseInt(sanitized.length === 3 ? sanitized.split('').map(c => c + c).join('') : sanitized, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return { r, g, b };
+}
+
+// Utilitário para converter hex em rgba
+function hexToRgba(hex, alpha) {
+    const sanitized = hex.replace('#', '');
+    const full = sanitized.length === 3 ? sanitized.split('').map(c => c + c).join('') : sanitized;
+    const bigint = parseInt(full, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Usar credenciais do arquivo credentials.js
+const DEMO_KEYS = window.CREDENTIALS || {};
+
+// Função para obter o grupo atual baseado nas credenciais
+function getCurrentGroup() {
+    const key = localStorage.getItem('trello_key') || '';
+    const token = localStorage.getItem('trello_token') || '';
+    const boardId = localStorage.getItem('trello_board_id') || '';
+    
+    for (const [group, credentials] of Object.entries(DEMO_KEYS)) {
+        if (key === credentials.key && token === credentials.token && boardId === credentials.board) {
+            return group;
         }
+    }
+    return 'errorsquad'; // padrão
+}
+
+// Função para obter o número da sprint da URL
+function getSprintNumberFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sprint = urlParams.get('sprint');
+    if (sprint) {
+        // Se for formato "sprint-1", "sprint-2", etc.
+        if (sprint.startsWith('sprint-')) {
+            return parseInt(sprint.replace('sprint-', ''));
+        }
+        // Se for apenas número
+        return parseInt(sprint);
+    }
+    return 1;
+}
+
+// Função para carregar dados simulados baseado no grupo e sprint
+async function loadSimulatedData(group, sprintNumber) {
+    try {
+        const dataFile = `${group}-sprint${sprintNumber}.json`;
         
-        console.log(`Carregando dados simulados para sprint: ${sprintId}`);
+        console.log(`Carregando dados simulados para grupo: ${group}, sprint: ${sprintNumber}`);
         console.log(`Arquivo de dados: ${dataFile}`);
         
         const response = await fetch(`../data/${dataFile}`);
         if (!response.ok) {
+            if (sprintNumber > 1) {
+                throw new Error(`📊 Não há dados disponíveis para a Sprint ${sprintNumber} do grupo ${group}.`);
+            }
             throw new Error(`Erro ao carregar dados simulados: ${response.statusText}`);
         }
         const data = await response.json();
+        
         return data;
     } catch (error) {
         console.error('Erro ao carregar dados simulados:', error);
@@ -67,17 +98,7 @@ async function loadSimulatedData(sprintId) {
     }
 }
 
-// Função para identificar a sprint pelas credenciais
-function getSprintIdByCredentials(key, token, boardId) {
-    for (const [sprintId, creds] of Object.entries(DEMO_KEYS)) {
-        if (key === creds.key && token === creds.token && boardId === creds.board) {
-            return sprintId;
-        }
-    }
-    return null;
-}
-
-// Função para verificar se as credenciais são válidas (simuladas)
+// Função para verificar se as credenciais são válidas (demo)
 function isValidCredentials(key, token, boardId) {
     return Object.values(DEMO_KEYS).some(creds => 
         key === creds.key && token === creds.token && boardId === creds.board
@@ -168,7 +189,7 @@ function disconnectFromTrello() {
 // Função para calcular a linha ideal
 function calculateIdealLine(data) {
     const totalDays = data.labels.length;
-    const totalPoints = data.data[0].remaining;
+    const totalPoints = data.totalPontos;
     const pointsPerDay = totalPoints / (totalDays - 1);
     
     return data.labels.map((_, index) => {
@@ -178,25 +199,77 @@ function calculateIdealLine(data) {
 
 // Função para atualizar as métricas
 function updateMetrics(data) {
-    const { metrics } = data;
+    // Calcular métricas a partir dos dados
+    const totalCards = data.totalCards;
+    const totalPoints = data.totalPontos;
+    const completedCards = data.cardsCompletados[data.cardsCompletados.length - 1];
+    const completedPoints = data.pontosCompletados[data.pontosCompletados.length - 1];
+    
+    const cardsPercentage = Math.round((completedCards / totalCards) * 100);
+    const pointsPercentage = Math.round((completedPoints / totalPoints) * 100);
     
     // Cards Progress
     const cardsProgress = document.getElementById('cards-progress');
-    cardsProgress.style.width = `${metrics.cardsCompleted.percentage}%`;
+    cardsProgress.style.width = `${cardsPercentage}%`;
     document.getElementById('cards-text').textContent = 
-        `${metrics.cardsCompleted.completed}/${metrics.cardsCompleted.total} (${metrics.cardsCompleted.percentage}%)`;
+        `${completedCards}/${totalCards} (${cardsPercentage}%)`;
 
     // Points Progress
     const pointsProgress = document.getElementById('points-progress');
-    pointsProgress.style.width = `${metrics.pointsCompleted.percentage}%`;
+    pointsProgress.style.width = `${pointsPercentage}%`;
     document.getElementById('points-text').textContent = 
-        `${metrics.pointsCompleted.completed}/${metrics.pointsCompleted.total} (${metrics.pointsCompleted.percentage}%)`;
+        `${completedPoints}/${totalPoints} (${pointsPercentage}%)`;
 
-    // Days Progress
+    // Days Progress - calcular baseado nos dados reais
+    const totalDays = data.totalDias;
+    const workedDays = data.diasTrabalhados || 0; // Usar diasTrabalhados do JSON
+    const daysPercentage = Math.round((workedDays / totalDays) * 100);
+    
     const daysProgress = document.getElementById('days-progress');
-    daysProgress.style.width = `${metrics.daysWorked.percentage}%`;
-    document.getElementById('days-text').textContent = 
-        `${metrics.daysWorked.completed}/${metrics.daysWorked.total} (${metrics.daysWorked.percentage}%)`;
+    const daysText = document.getElementById('days-text');
+    
+    if (daysProgress && daysText) {
+        daysProgress.style.width = `${daysPercentage}%`;
+        daysText.textContent = `${workedDays}/${totalDays} (${daysPercentage}%)`;
+    } else {
+        console.error('Elementos days-progress ou days-text não encontrados');
+    }
+    
+    // Mostrar informações da equipe se disponível
+    if (data.membrosEquipe) {
+        updateTeamInfo(data);
+    }
+}
+
+// Função para atualizar informações da equipe
+function updateTeamInfo(data) {
+    const teamInfoContainer = document.getElementById('team-info');
+    if (!teamInfoContainer) return;
+    
+    const membrosEquipe = data.membrosEquipe;
+    const totalPontos = data.totalPontos;
+    const totalDias = data.totalDias;
+    
+    // Calcular pontos por membro por dia
+    const pontosPorMembroPorDia = (totalPontos / totalDias) / membrosEquipe;
+    
+    let html = '<h4>Informações da Equipe:</h4>';
+    html += `<div class="team-stats">`;
+    html += `<div class="team-stat-item">`;
+    html += `<span class="team-stat-label">👥 Membros da Equipe:</span>`;
+    html += `<span class="team-stat-value">${membrosEquipe}</span>`;
+    html += `</div>`;
+    html += `<div class="team-stat-item">`;
+    html += `<span class="team-stat-label">📊 Pontos por Membro/Dia:</span>`;
+    html += `<span class="team-stat-value">${pontosPorMembroPorDia.toFixed(2)} pts</span>`;
+    html += `</div>`;
+    html += `<div class="team-stat-item">`;
+    html += `<span class="team-stat-label">📅 Duração da Sprint:</span>`;
+    html += `<span class="team-stat-value">${totalDias} dias</span>`;
+    html += `</div>`;
+    html += `</div>`;
+    
+    teamInfoContainer.innerHTML = html;
 }
 
 // Função para carregar dados simulados
@@ -215,29 +288,77 @@ async function loadBurndownData() {
 
     // Verifica se as credenciais são válidas
     if (!isValidCredentials(key, token, boardId)) {
-        errorDiv.textContent = 'Credenciais inválidas. Use as credenciais de uma das sprints disponíveis.';
+        errorDiv.textContent = 'Credenciais inválidas. Use as credenciais de um dos grupos disponíveis.';
         errorDiv.style.display = 'block';
         document.getElementById('loading-message').textContent = 'Erro: Credenciais inválidas.';
         return;
     }
 
+    // Salva as credenciais no localStorage
+    localStorage.setItem('trello_key', key);
+    localStorage.setItem('trello_token', token);
+    localStorage.setItem('trello_board_id', boardId);
+
     document.getElementById('loading-message').textContent = 'Carregando dados...';
     document.getElementById('loading-message').style.display = 'block';
 
     try {
-        // Detecta sprint pelas credenciais
-        const sprintId = getSprintIdByCredentials(key, token, boardId) || getSprintIdFromUrl();
-        console.log('Carregando sprint:', sprintId);
+        // Obtém o grupo e sprint
+        const group = getCurrentGroup();
+        const sprintNumber = getSprintNumberFromUrl();
+        console.log('Carregando grupo:', group, 'sprint:', sprintNumber);
         
-        const data = await loadSimulatedData(sprintId);
+        const data = await loadSimulatedData(group, sprintNumber);
         await renderBurndownWithData(data);
         document.getElementById('loading-message').style.display = 'none';
-        updateSprintTitle(sprintId);
+        updateSprintTitle(sprintNumber);
     } catch (err) {
         console.error('Erro ao carregar dados:', err);
+        
+        // Limpar o gráfico existente
+        if (burndownChart) {
+            burndownChart.destroy();
+            burndownChart = null;
+        }
+        
+        // Limpar o canvas
+        const ctx = document.getElementById('burndownChart').getContext('2d');
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // Mostrar mensagem de erro
         errorDiv.textContent = err.message;
         errorDiv.style.display = 'block';
         document.getElementById('loading-message').textContent = 'Erro ao carregar dados.';
+        
+        // Limpar métricas
+        clearMetrics();
+    }
+}
+
+// Função para limpar as métricas
+function clearMetrics() {
+    // Limpar métricas de cards
+    const cardsProgress = document.getElementById('cards-progress');
+    const cardsText = document.getElementById('cards-text');
+    if (cardsProgress && cardsText) {
+        cardsProgress.style.width = '0%';
+        cardsText.textContent = '0/0 (0%)';
+    }
+    
+    // Limpar métricas de pontos
+    const pointsProgress = document.getElementById('points-progress');
+    const pointsText = document.getElementById('points-text');
+    if (pointsProgress && pointsText) {
+        pointsProgress.style.width = '0%';
+        pointsText.textContent = '0/0 (0%)';
+    }
+    
+    // Limpar métricas de dias
+    const daysProgress = document.getElementById('days-progress');
+    const daysText = document.getElementById('days-text');
+    if (daysProgress && daysText) {
+        daysProgress.style.width = '0%';
+        daysText.textContent = '0/0 (0%)';
     }
 }
 
@@ -260,24 +381,29 @@ async function renderBurndownWithData(data) {
     if (burndownChart) burndownChart.destroy();
     
     const labels = data.labels;
-    const remainingPoints = data.data.map(item => item.remaining);
-    const completedPoints = data.data.map(item => item.completed);
+    const remainingPoints = data.pontosCompletados.map((completed, index) => data.totalPontos - completed);
+    const completedPoints = data.pontosCompletados;
     const idealLine = calculateIdealLine(data);
+    
+    // Verificar se há progresso real (se todos os pontos completados são 0)
+    const hasProgress = data.pontosCompletados.some(points => points > 0);
 
     // Configuração do gradiente para o gráfico
     const gradientRemaining = ctx.createLinearGradient(0, 0, 0, 400);
-    gradientRemaining.addColorStop(0, 'rgba(255, 75, 75, 0.2)');
-    gradientRemaining.addColorStop(1, 'rgba(255, 75, 75, 0)');
+    const primaryRgb = hexToRgb(theme.primary);
+    gradientRemaining.addColorStop(0, `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.2)`);
+    gradientRemaining.addColorStop(1, `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0)`);
 
     const gradientCompleted = ctx.createLinearGradient(0, 0, 0, 400);
-    gradientCompleted.addColorStop(0, 'rgba(75, 75, 255, 0.2)');
-    gradientCompleted.addColorStop(1, 'rgba(75, 75, 255, 0)');
+    const secondaryRgb = hexToRgb(theme.secondary);
+    gradientCompleted.addColorStop(0, `rgba(${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}, 0.2)`);
+    gradientCompleted.addColorStop(1, `rgba(${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}, 0)`);
 
     burndownChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [
+            datasets: hasProgress ? [
                 {
                     label: 'Pontos Restantes',
                     data: remainingPoints,
@@ -296,8 +422,8 @@ async function renderBurndownWithData(data) {
                 {
                     label: 'Burndown Ideal',
                     data: idealLine,
-                    borderColor: theme.accent,
-                    backgroundColor: 'rgba(155, 77, 202, 0.1)',
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--brand-5').trim() || theme.accent,
+                    backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--brand-5').trim() || '#6366f1', 0.1),
                     borderDash: [5, 5],
                     fill: false,
                     borderWidth: 2,
@@ -309,7 +435,7 @@ async function renderBurndownWithData(data) {
                     label: 'Pontos Completados',
                     data: completedPoints,
                     type: 'line',
-                    borderColor: theme.secondary,
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--brand-4').trim() || theme.secondary,
                     backgroundColor: gradientCompleted,
                     tension: 0.4,
                     fill: true,
@@ -317,9 +443,25 @@ async function renderBurndownWithData(data) {
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     pointBackgroundColor: '#FFFFFF',
-                    pointBorderColor: theme.secondary,
+                    pointBorderColor: getComputedStyle(document.documentElement).getPropertyValue('--brand-4').trim() || theme.secondary,
                     pointBorderWidth: 2,
                     order: 2
+                }
+            ] : [
+                {
+                    label: 'Burndown Ideal',
+                    data: idealLine,
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--brand-5').trim() || theme.accent,
+                    backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--brand-5').trim() || '#6366f1', 0.1),
+                    borderDash: [5, 5],
+                    fill: false,
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#FFFFFF',
+                    pointBorderColor: getComputedStyle(document.documentElement).getPropertyValue('--brand-5').trim() || theme.accent,
+                    pointBorderWidth: 2,
+                    order: 1
                 }
             ]
         },
@@ -349,9 +491,18 @@ async function renderBurndownWithData(data) {
                         font: {
                             size: 12,
                             weight: '500',
-                            family: "'Segoe UI', 'Arial', sans-serif"
+                            family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
                         },
-                        boxWidth: 8
+                        boxWidth: 8,
+                        generateLabels: function(chart) {
+                            const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                            const labels = original.call(this, chart);
+                            labels.forEach(label => {
+                                label.fillStyle = label.strokeStyle;
+                                label.lineWidth = 0;
+                            });
+                            return labels;
+                        }
                     }
                 },
                 tooltip: {
@@ -369,11 +520,11 @@ async function renderBurndownWithData(data) {
                     titleFont: {
                         size: 14,
                         weight: '600',
-                        family: "'Segoe UI', 'Arial', sans-serif"
+                        family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
                     },
                     bodyFont: {
                         size: 12,
-                        family: "'Segoe UI', 'Arial', sans-serif"
+                        family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
                     },
                     callbacks: {
                         label: function(context) {
@@ -395,7 +546,8 @@ async function renderBurndownWithData(data) {
                     grid: {
                         display: true,
                         drawBorder: false,
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        color: 'rgba(0, 0, 0, 0.03)',
+                        lineWidth: 1
                     },
                     border: {
                         display: false
@@ -405,7 +557,7 @@ async function renderBurndownWithData(data) {
                         color: theme.textSecondary,
                         font: {
                             size: 11,
-                            family: "'Segoe UI', 'Arial', sans-serif"
+                            family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
                         },
                         padding: 8,
                         maxTicksLimit: 8,
@@ -427,15 +579,14 @@ async function renderBurndownWithData(data) {
                         color: theme.textSecondary,
                         font: {
                             size: 11,
-                            family: "'Segoe UI', 'Arial', sans-serif"
+                            family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
                         },
                         padding: 8,
                         maxRotation: 45,
                         minRotation: 45,
                         callback: function(value, index) {
                             const label = this.getLabelForValue(index);
-                            const [ano, mes, dia] = label.split('-');
-                            return `${dia}/${mes}`;
+                            return label; // Retorna o label original (Dia 1, Dia 2, etc.)
                         }
                     }
                 }
@@ -447,8 +598,8 @@ async function renderBurndownWithData(data) {
         }
     });
 
-    // Atualiza as métricas com animação
-    updateMetricsWithAnimation(data.metrics);
+    // Atualiza as métricas
+    updateMetrics(data);
 }
 
 // Função para atualizar métricas com animação
@@ -536,6 +687,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Listener para desconectar
         document.getElementById('disconnect-trello-btn').addEventListener('click', disconnectFromTrello);
         
+        // Listener para mudança de sprint
+        const sprintSelect = document.getElementById('sprint-select');
+        if (sprintSelect) {
+            // Sincronizar seletor com a URL atual
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentSprint = urlParams.get('sprint') || 'sprint-1';
+            const sprintNumber = currentSprint.replace('sprint-', '');
+            sprintSelect.value = sprintNumber;
+            
+            sprintSelect.addEventListener('change', async () => {
+                const selectedSprint = sprintSelect.value;
+                // Atualizar a URL com o novo parâmetro de sprint
+                const url = new URL(window.location);
+                url.searchParams.set('sprint', `sprint-${selectedSprint}`);
+                window.history.pushState({}, '', url);
+                
+                // Recarregar os dados
+                await loadBurndownData();
+            });
+        }
+        
         loadCredentials();
         await loadBurndownData();
     } catch (error) {
@@ -545,3 +717,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Atualizar dados a cada 5 minutos
 setInterval(loadBurndownData, 5 * 60 * 1000);
+
+// Reagir a mudanças de tema para re-renderizar o gráfico com novas cores
+window.addEventListener('themechange', async () => {
+    try {
+        theme = getThemeColors();
+        await loadBurndownData();
+    } catch (e) {
+        console.error('Erro ao aplicar tema:', e);
+    }
+});

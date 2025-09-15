@@ -6,11 +6,16 @@
     <title>Burndown Chart Generator</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/graph.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="../js/theme.js" defer></script>
   </head>
   <body>
     <header class="header">
       <h1>Burndown Chart Generator</h1>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Switch theme">
+        <i class="fas fa-moon"></i>
+      </button>
     </header>
 
     <main class="container">
@@ -41,20 +46,31 @@
         </div>
       </div>
 
-      <section class="chart-section">
+      <section class="chart-section" data-aos="fade-up">
+        <div class="chart-header">
+          <h2>Burndown Chart</h2>
+          <div class="sprint-selector">
+            <label for="sprint-select">Sprint:</label>
+            <select id="sprint-select" class="sprint-select">
+              <option value="1">Sprint 1</option>
+              <option value="2">Sprint 2</option>
+              <option value="3">Sprint 3</option>
+            </select>
+          </div>
+        </div>
         <div class="chart-wrapper">
           <canvas id="burndownChart"></canvas>
           <div id="loading-message">Carregando dados...</div>
         </div>
       </section>
 
-      <section class="metrics-container">
+      <section class="metrics-container" data-aos="fade-up" data-aos-delay="100">
         <div class="metric-item">
           <div class="metric-info">
             <span class="metric-label">Progresso dos Cards</span>
             <span class="metric-value" id="cards-text">0/0 (0%)</span>
           </div>
-          <div class="progress-container">
+          <div class="progress-container striped">
             <div class="progress-bar" id="cards-progress"></div>
           </div>
         </div>
@@ -64,7 +80,7 @@
             <span class="metric-label">Pontos Completados</span>
             <span class="metric-value" id="points-text">0/0 (0%)</span>
           </div>
-          <div class="progress-container">
+          <div class="progress-container striped">
             <div class="progress-bar" id="points-progress"></div>
           </div>
         </div>
@@ -74,10 +90,15 @@
             <span class="metric-label">Dias Trabalhados</span>
             <span class="metric-value" id="days-text">0/0 (0%)</span>
           </div>
-          <div class="progress-container">
+          <div class="progress-container striped">
             <div class="progress-bar" id="days-progress"></div>
           </div>
         </div>
+      </section>
+
+      <!-- Seção de Informações da Equipe -->
+      <section class="team-section" id="team-info">
+        <!-- Informações da equipe serão carregadas dinamicamente aqui -->
       </section>
 
       <div class="nav-buttons">
@@ -86,7 +107,14 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/credentials.js"></script>
     <script type="module" src="../js/graph.js"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        if (window.AOS) AOS.init({ duration: 600, once: true });
+      });
+    </script>
   </body>
 </html>
 
