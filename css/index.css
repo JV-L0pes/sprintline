@@ -1,17 +1,49 @@
 :root {
-  --primary-color: #3b82f6; /* Azul moderno */
-  --secondary-color: #10b981; /* Verde esmeralda */
-  --accent-color: #8b5cf6; /* Roxo vibrante */
+  --primary-color: #06b6d4; /* Ciano */
+  --secondary-color: #14b8a6; /* Verde-água (teal) */
+  --accent-color: #0ea5e9; /* Azul-ciano */
+  /* Brand blues/cyans */
+  --brand-1: #22d3ee; /* cyan-400 */
+  --brand-2: #0ea5e9; /* sky-500 */
+  --brand-3: #38bdf8; /* sky-400 */
+  --brand-4: #2563eb; /* blue-600 */
+  --brand-5: #6366f1; /* indigo-500 */
   --background-color: #ffffff;
   --surface-color: #f8fafc;
   --text-color: #1e293b;
   --text-secondary: #64748b;
   --border-color: #e2e8f0;
-  --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  --gradient-secondary: linear-gradient(135deg, #10b981, #3b82f6);
+  --gradient-primary: linear-gradient(135deg, #06b6d4, #0ea5e9);
+  --gradient-secondary: linear-gradient(135deg, #14b8a6, #06b6d4);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --success-color: #22c55e; /* verde sucesso */
+  --danger-color: #ef4444; /* vermelho alerta */
+}
+
+:root[data-theme="dark"] {
+  --primary-color: #22d3ee; /* Ciano claro */
+  --secondary-color: #2dd4bf; /* Teal claro */
+  --accent-color: #38bdf8; /* Azul-ciano claro */
+  /* Brand blues/cyans - dark */
+  --brand-1: #22d3ee;
+  --brand-2: #38bdf8;
+  --brand-3: #60a5fa; /* blue-400 */
+  --brand-4: #93c5fd; /* blue-300 */
+  --brand-5: #a5b4fc; /* indigo-300 */
+  --background-color: #0b1220; /* Fundo escuro profundo */
+  --surface-color: #0f172a; /* Superfície escura (slate-900) */
+  --text-color: #e2e8f0; /* Texto claro */
+  --text-secondary: #94a3b8; /* Texto secundário */
+  --border-color: #1f2937; /* Bordas discretas */
+  --gradient-primary: linear-gradient(135deg, #22d3ee, #38bdf8);
+  --gradient-secondary: linear-gradient(135deg, #2dd4bf, #22d3ee);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --success-color: #4ade80;
+  --danger-color: #f87171;
 }
 
 * {
@@ -101,6 +133,33 @@ header h1 {
   font-size: 1.2rem;
 }
 
+/* Theme toggle button */
+.theme-toggle {
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.theme-toggle i {
+  font-size: 1rem;
+}
+
 /* Home Page Styles */
 .home-container {
   min-height: calc(100vh - 60px);
@@ -141,7 +200,7 @@ header h1 {
 }
 
 .logo {
-  font-size: 3.5rem;
+  font-size: clamp(2.25rem, 6vw, 3.5rem);
   font-weight: 800;
   margin-bottom: 1.5rem;
   background: var(--gradient-primary);
@@ -154,11 +213,19 @@ header h1 {
 }
 
 .tagline {
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-  max-width: 600px;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 600;
+  color: var(--text-color);
+  max-width: 800px;
   margin: 0 auto;
-  line-height: 1.6;
+  line-height: 1.4;
+  text-align: center;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradientFlow 6s ease infinite;
 }
 
 .features-grid {
@@ -273,6 +340,16 @@ header h1 {
   color: var(--primary-color);
 }
 
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Animations */
 @keyframes gradientFlow {
   0% {
@@ -341,7 +418,7 @@ header h1 {
   }
   
   .header-content h1 {
-    font-size: 1.5rem;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
   }
 }
 
