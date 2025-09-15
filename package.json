@@ -1,7 +1,7 @@
 {
   "name": "burndown-chart",
   "version": "1.0.0",
-  "description": "Dashboard de Burndown Chart com dados simulados",
+  "description": "Dashboard interativo de Burndown Chart para equipes de desenvolvimento ágil",
   "main": "index.js",
   "scripts": {
     "start": "http-server -p 3000",

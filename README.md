@@ -1,4 +1,4 @@
-# 📊 Burndown Chart Generator - ErrorSquad
+# 📊 Burndown Chart Generator
 
 <div align="center">
 
@@ -13,13 +13,14 @@
 
 ## 🚀 Sobre o Projeto
 
-O Burndown Chart Generator é uma ferramenta visual desenvolvida para a ErrorSquad, uma equipe de desenvolvimento ágil. Esta aplicação web oferece uma interface moderna e intuitiva para visualização de métricas importantes do projeto, incluindo:
+O Burndown Chart Generator é uma ferramenta visual moderna e intuitiva para equipes de desenvolvimento ágil. Esta aplicação web oferece uma interface elegante e responsiva para visualização de métricas importantes do projeto, incluindo:
 
-- 📈 Gráfico de Burndown
-- 📊 Métricas de Velocidade
-- 📉 Produtividade da Equipe
-- 🎯 Eficiência
-- ✨ Qualidade do Código
+- 📈 Gráfico de Burndown Interativo
+- 📊 Métricas de Velocidade da Equipe
+- 📉 Análise de Produtividade
+- 🎯 Indicadores de Eficiência
+- ✨ Métricas de Qualidade do Código
+- 🔗 Integração com Trello
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -34,9 +35,11 @@ O Burndown Chart Generator é uma ferramenta visual desenvolvida para a ErrorSqu
 
 - **Dashboard Interativo**: Visualização em tempo real do progresso da sprint
 - **Métricas Detalhadas**: Análise completa do desempenho da equipe
-- **Interface Responsiva**: Adaptável a diferentes dispositivos
-- **Visualizações Gráficas**: Gráficos intuitivos e informativos
-- **Integração com GitHub**: Deploy automático via GitHub Pages
+- **Interface Responsiva**: Adaptável a diferentes dispositivos e tamanhos de tela
+- **Visualizações Gráficas**: Gráficos intuitivos e informativos usando Chart.js
+- **Integração com Trello**: Sincronização automática de dados do projeto
+- **Histórico de Sprints**: Acompanhamento da evolução ao longo do tempo
+- **Deploy Automático**: Hospedagem gratuita via GitHub Pages
 
 ## 🖥️ Como Usar
 
@@ -77,7 +80,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 **João Victor** - [GitHub](https://github.com/JV-L0pes)
 
-Desenvolvido para a equipe ErrorSquad.
+Ferramenta desenvolvida para equipes de desenvolvimento ágil.
 
 ---
 
