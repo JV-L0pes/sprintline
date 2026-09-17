@@ -19,6 +19,7 @@ interface SessionValue {
     name: string;
     password: string;
     locale: string;
+    inviteToken?: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -55,8 +56,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (input: { email: string; name: string; password: string; locale: string }) => {
-      await apiRequest<User>("/api/v1/auth/register", { method: "POST", body: input });
+    async (input: {
+      email: string;
+      name: string;
+      password: string;
+      locale: string;
+      inviteToken?: string;
+    }) => {
+      const { inviteToken, ...rest } = input;
+      await apiRequest<User>("/api/v1/auth/register", {
+        method: "POST",
+        body: { ...rest, invite_token: inviteToken },
+      });
       await login(input.email, input.password);
     },
     [login],

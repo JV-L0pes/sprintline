@@ -146,6 +146,88 @@ class Board(AggregateRoot):
     def column(self, column_id: uuid.UUID) -> BoardColumn | None:
         return next((column for column in self.columns if column.id == column_id), None)
 
+    def _reindex(self) -> None:
+        for position, column in enumerate(sorted(self.columns, key=lambda column: column.position)):
+            column.position = position
+
+    def ensure_category_coverage(self) -> None:
+        """RN-06: o board precisa de pelo menos uma coluna por categoria."""
+        for category in StatusCategory:
+            if not any(column.category is category for column in self.columns):
+                raise ValidationError(
+                    f"O board precisa de pelo menos uma coluna de {category.value}",
+                    code="BOARD_MISSING_CATEGORY",
+                )
+
+    def add_column(
+        self,
+        *,
+        name: str,
+        category: StatusCategory,
+        wip_limit: int | None = None,
+        position: int | None = None,
+    ) -> BoardColumn:
+        if not name.strip():
+            raise ValidationError("Nome da coluna e obrigatorio", code="INVALID_COLUMN_NAME")
+        if wip_limit is not None and wip_limit < 1:
+            raise ValidationError("WIP limit deve ser >= 1", code="INVALID_WIP_LIMIT")
+        column = BoardColumn(
+            board_id=self.id,
+            name=name,
+            position=position if position is not None else len(self.columns),
+            category=category,
+            wip_limit=wip_limit,
+        )
+        self.columns.append(column)
+        self._reindex()
+        return column
+
+    def update_column(
+        self,
+        column_id: uuid.UUID,
+        *,
+        name: str | None = None,
+        wip_limit: int | None = None,
+        clear_wip: bool = False,
+    ) -> BoardColumn:
+        column = self.column(column_id)
+        if column is None:
+            raise ValidationError("Coluna nao encontrada", code="COLUMN_NOT_FOUND")
+        if name is not None:
+            if not name.strip():
+                raise ValidationError("Nome da coluna e obrigatorio", code="INVALID_COLUMN_NAME")
+            column.name = name.strip()[:60]
+        if clear_wip:
+            column.wip_limit = None
+        elif wip_limit is not None:
+            if wip_limit < 1:
+                raise ValidationError("WIP limit deve ser >= 1", code="INVALID_WIP_LIMIT")
+            column.wip_limit = wip_limit
+        return column
+
+    def remove_column(self, column_id: uuid.UUID) -> None:
+        column = self.column(column_id)
+        if column is None:
+            raise ValidationError("Coluna nao encontrada", code="COLUMN_NOT_FOUND")
+        remaining = [candidate for candidate in self.columns if candidate.id != column_id]
+        if not any(candidate.category is column.category for candidate in remaining):
+            raise ValidationError(
+                "Nao e possivel remover a ultima coluna desta categoria",
+                code="BOARD_LAST_CATEGORY_COLUMN",
+            )
+        self.columns = remaining
+        self._reindex()
+
+    def reorder_columns(self, column_ids: list[uuid.UUID]) -> None:
+        if {column.id for column in self.columns} != set(column_ids):
+            raise ValidationError(
+                "A ordenacao deve conter exatamente as colunas do board",
+                code="INVALID_COLUMN_ORDER",
+            )
+        by_id = {column.id: column for column in self.columns}
+        for position, column_id in enumerate(column_ids):
+            by_id[column_id].position = position
+
     def first_todo_column(self) -> BoardColumn:
         todo = [column for column in self.columns if column.category is StatusCategory.TODO]
         if not todo:

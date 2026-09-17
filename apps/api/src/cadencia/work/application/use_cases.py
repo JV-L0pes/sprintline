@@ -163,6 +163,24 @@ class ListProjects:
         return [project_view(project) for project in projects]
 
 
+def board_view(project: Project, board: Board, work_items: list[WorkItem]) -> BoardView:
+    views = [item_view(item, board) for item in work_items]
+    columns = [
+        ColumnView(
+            id=column.id,
+            name=column.name,
+            position=column.position,
+            category=column.category,
+            wip_limit=column.wip_limit,
+            item_count=sum(1 for view in views if view.status_column_id == column.id),
+        )
+        for column in sorted(board.columns, key=lambda column: column.position)
+    ]
+    return BoardView(
+        id=board.id, project_id=project.id, name=board.name, columns=columns, items=views
+    )
+
+
 class GetBoard:
     def __init__(
         self,
@@ -182,20 +200,124 @@ class GetBoard:
             project_id=project_id,
         )
         work_items = await self._items.list_for_project(project.id)
-        views = [item_view(item, board) for item in work_items]
-        columns = [
-            ColumnView(
-                id=column.id,
-                name=column.name,
-                position=column.position,
-                category=column.category,
-                wip_limit=column.wip_limit,
-                item_count=sum(1 for view in views if view.status_column_id == column.id),
+        return board_view(project, board, work_items)
+
+
+class _BoardColumnsUseCase:
+    """Base para operacoes de coluna: carrega contexto e devolve o board."""
+
+    def __init__(
+        self,
+        projects: ProjectRepository,
+        boards: BoardRepository,
+        items: WorkItemRepository,
+    ) -> None:
+        self._projects = projects
+        self._boards = boards
+        self._items = items
+
+    async def _save_and_view(
+        self, *, workspace_id: uuid.UUID, project_id: uuid.UUID, board: Board
+    ) -> BoardView:
+        await self._boards.save(board)
+        project, refreshed = await _load_context(
+            projects=self._projects,
+            boards=self._boards,
+            workspace_id=workspace_id,
+            project_id=project_id,
+        )
+        work_items = await self._items.list_for_project(project.id)
+        return board_view(project, refreshed, work_items)
+
+
+class CreateBoardColumn(_BoardColumnsUseCase):
+    async def execute(
+        self,
+        *,
+        workspace_id: uuid.UUID,
+        project_id: uuid.UUID,
+        name: str,
+        category: StatusCategory,
+        wip_limit: int | None = None,
+    ) -> BoardView:
+        _, board = await _load_context(
+            projects=self._projects,
+            boards=self._boards,
+            workspace_id=workspace_id,
+            project_id=project_id,
+        )
+        board.add_column(name=name, category=category, wip_limit=wip_limit)
+        return await self._save_and_view(
+            workspace_id=workspace_id, project_id=project_id, board=board
+        )
+
+
+class UpdateBoardColumn(_BoardColumnsUseCase):
+    async def execute(
+        self,
+        *,
+        workspace_id: uuid.UUID,
+        project_id: uuid.UUID,
+        column_id: uuid.UUID,
+        name: str | None = None,
+        wip_limit: int | None = None,
+        clear_wip: bool = False,
+    ) -> BoardView:
+        _, board = await _load_context(
+            projects=self._projects,
+            boards=self._boards,
+            workspace_id=workspace_id,
+            project_id=project_id,
+        )
+        board.update_column(column_id, name=name, wip_limit=wip_limit, clear_wip=clear_wip)
+        return await self._save_and_view(
+            workspace_id=workspace_id, project_id=project_id, board=board
+        )
+
+
+class DeleteBoardColumn(_BoardColumnsUseCase):
+    async def execute(
+        self,
+        *,
+        workspace_id: uuid.UUID,
+        project_id: uuid.UUID,
+        column_id: uuid.UUID,
+    ) -> BoardView:
+        _, board = await _load_context(
+            projects=self._projects,
+            boards=self._boards,
+            workspace_id=workspace_id,
+            project_id=project_id,
+        )
+        if board.column(column_id) is None:
+            raise NotFoundError("Coluna nao encontrada", code="COLUMN_NOT_FOUND")
+        if await self._items.count_in_column(column_id) > 0:
+            raise ConflictError(
+                "Mova os itens desta coluna antes de remove-la", code="COLUMN_NOT_EMPTY"
             )
-            for column in sorted(board.columns, key=lambda column: column.position)
-        ]
-        return BoardView(
-            id=board.id, project_id=project.id, name=board.name, columns=columns, items=views
+        board.remove_column(column_id)
+        return await self._save_and_view(
+            workspace_id=workspace_id, project_id=project_id, board=board
+        )
+
+
+class ReorderBoardColumns(_BoardColumnsUseCase):
+    async def execute(
+        self,
+        *,
+        workspace_id: uuid.UUID,
+        project_id: uuid.UUID,
+        column_ids: list[uuid.UUID],
+    ) -> BoardView:
+        _, board = await _load_context(
+            projects=self._projects,
+            boards=self._boards,
+            workspace_id=workspace_id,
+            project_id=project_id,
+        )
+        board.reorder_columns(column_ids)
+        return await self._save_and_view(
+            workspace_id=workspace_id, project_id=project_id, board=board
         )
 
 

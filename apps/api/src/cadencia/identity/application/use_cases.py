@@ -316,16 +316,166 @@ class AcceptInvite:
         invite = await self._invites.find_by_token_hash(self._tokens.hash_opaque_token(token))
         if invite is None:
             raise NotFoundError("Convite nao encontrado", code="INVITE_NOT_FOUND")
-        invite.accept(user_email=user.email, now=now)
         existing = await self._memberships.get(invite.workspace_id, user.id)
+        workspace = await self._workspaces.get(invite.workspace_id)
+        if workspace is None:
+            raise NotFoundError("Workspace nao encontrado", code="WORKSPACE_NOT_FOUND")
         if existing is not None:
-            raise ConflictError("Usuario ja e membro do workspace", code="ALREADY_MEMBER")
+            # Idempotente: ja e membro (ex.: refresh da pagina de convite).
+            return workspace_view(workspace, existing.role)
+        invite.accept(user_email=user.email, now=now)
         membership = Membership.join(
             workspace_id=invite.workspace_id, user_id=user.id, role=invite.role, now=now
         )
         await self._memberships.add(membership)
         await self._invites.save(invite)
-        workspace = await self._workspaces.get(invite.workspace_id)
-        if workspace is None:
-            raise NotFoundError("Workspace nao encontrado", code="WORKSPACE_NOT_FOUND")
         return workspace_view(workspace, invite.role)
+
+
+def _ensure_can_manage(*, actor_role: Role, target_role: Role) -> None:
+    """Ninguem gerencia alguem com papel igual ou superior ao seu."""
+    from cadencia.identity.domain.value_objects import ROLE_RANK
+
+    if ROLE_RANK[target_role] >= ROLE_RANK[actor_role]:
+        raise ForbiddenError(
+            "Seu papel nao permite gerenciar este membro", code="CANNOT_MANAGE_MEMBER"
+        )
+
+
+def _ensure_role_allowed(*, actor_role: Role, new_role: Role) -> None:
+    if not role_at_least(actor_role, new_role):
+        raise ForbiddenError(
+            "Nao e possivel atribuir papel superior ao seu", code="ROLE_ESCALATION"
+        )
+
+
+async def _owners_count(memberships: MembershipRepository, workspace_id: uuid.UUID) -> int:
+    members = await memberships.list_for_workspace(workspace_id)
+    return sum(1 for entry in members if entry.membership.role is Role.OWNER)
+
+
+class ChangeMemberRole:
+    def __init__(self, memberships: MembershipRepository, users: UserRepository) -> None:
+        self._memberships = memberships
+        self._users = users
+
+    async def execute(
+        self,
+        *,
+        actor_id: uuid.UUID,
+        actor_role: Role,
+        workspace_id: uuid.UUID,
+        target_user_id: uuid.UUID,
+        new_role: Role,
+    ) -> MemberView:
+        if target_user_id == actor_id:
+            raise ConflictError(
+                "Voce nao pode alterar seu proprio papel", code="CANNOT_MANAGE_SELF"
+            )
+        target = await self._memberships.get(workspace_id, target_user_id)
+        if target is None:
+            raise NotFoundError("Membro nao encontrado", code="MEMBER_NOT_FOUND")
+        _ensure_can_manage(actor_role=actor_role, target_role=target.role)
+        _ensure_role_allowed(actor_role=actor_role, new_role=new_role)
+        if (
+            target.role is Role.OWNER
+            and new_role is not Role.OWNER
+            and await _owners_count(self._memberships, workspace_id) <= 1
+        ):
+            raise ConflictError("O workspace precisa de pelo menos um owner", code="LAST_OWNER")
+        target.change_role(new_role)
+        await self._memberships.save(target)
+        user = await self._users.get(target_user_id)
+        if user is None:
+            raise NotFoundError("Usuario nao encontrado", code="USER_NOT_FOUND")
+        return member_view(MembershipWithUser(membership=target, user=user))
+
+
+class RemoveMember:
+    def __init__(self, memberships: MembershipRepository) -> None:
+        self._memberships = memberships
+
+    async def execute(
+        self,
+        *,
+        actor_role: Role,
+        actor_id: uuid.UUID,
+        workspace_id: uuid.UUID,
+        target_user_id: uuid.UUID,
+    ) -> None:
+        if target_user_id == actor_id:
+            raise ConflictError("Voce nao pode remover a si mesmo", code="CANNOT_MANAGE_SELF")
+        target = await self._memberships.get(workspace_id, target_user_id)
+        if target is None:
+            raise NotFoundError("Membro nao encontrado", code="MEMBER_NOT_FOUND")
+        _ensure_can_manage(actor_role=actor_role, target_role=target.role)
+        if target.role is Role.OWNER and await _owners_count(self._memberships, workspace_id) <= 1:
+            raise ConflictError("O workspace precisa de pelo menos um owner", code="LAST_OWNER")
+        await self._memberships.remove(target)
+
+
+class ResetMemberPassword:
+    def __init__(
+        self,
+        memberships: MembershipRepository,
+        users: UserRepository,
+        sessions: SessionRepository,
+        hasher: PasswordHasher,
+        clock: Clock,
+    ) -> None:
+        self._memberships = memberships
+        self._users = users
+        self._sessions = sessions
+        self._hasher = hasher
+        self._clock = clock
+
+    async def execute(
+        self,
+        *,
+        actor_role: Role,
+        workspace_id: uuid.UUID,
+        target_user_id: uuid.UUID,
+        new_password: str,
+    ) -> None:
+        if len(new_password) < PASSWORD_MIN_LENGTH:
+            raise ValidationError(
+                f"Senha deve ter ao menos {PASSWORD_MIN_LENGTH} caracteres",
+                code="WEAK_PASSWORD",
+            )
+        target = await self._memberships.get(workspace_id, target_user_id)
+        if target is None:
+            raise NotFoundError("Membro nao encontrado", code="MEMBER_NOT_FOUND")
+        _ensure_can_manage(actor_role=actor_role, target_role=target.role)
+        user = await self._users.get(target_user_id)
+        if user is None:
+            raise NotFoundError("Usuario nao encontrado", code="USER_NOT_FOUND")
+        user.set_password_hash(self._hasher.hash(new_password))
+        await self._users.save(user)
+        await self._sessions.revoke_all_for_user(user.id, self._clock.now())
+
+
+class ChangeOwnPassword:
+    def __init__(
+        self,
+        users: UserRepository,
+        sessions: SessionRepository,
+        hasher: PasswordHasher,
+        clock: Clock,
+    ) -> None:
+        self._users = users
+        self._sessions = sessions
+        self._hasher = hasher
+        self._clock = clock
+
+    async def execute(self, *, user: User, current_password: str, new_password: str) -> None:
+        if not self._hasher.verify(user.password_hash, current_password):
+            raise UnauthorizedError("Senha atual incorreta", code="INVALID_CURRENT_PASSWORD")
+        if len(new_password) < PASSWORD_MIN_LENGTH:
+            raise ValidationError(
+                f"Senha deve ter ao menos {PASSWORD_MIN_LENGTH} caracteres",
+                code="WEAK_PASSWORD",
+            )
+        user.set_password_hash(self._hasher.hash(new_password))
+        await self._users.save(user)
+        # Toda a familia de sessoes e revogada: re-login em todos os dispositivos.
+        await self._sessions.revoke_all_for_user(user.id, self._clock.now())

@@ -51,9 +51,11 @@ async def test_invite_flow_grants_access(client: httpx.AsyncClient) -> None:
     assert members.status_code == 200
     assert len(members.json()) == 2
 
-    # Convite reutilizado falha (RN-03)
+    # Reaceite pelo mesmo usuario e idempotente (refresh da tela de convite);
+    # para terceiros o convite continua de uso unico (RN-03, INVITE_ALREADY_USED).
     again = await client.post(f"/api/v1/invites/{token}/accept", headers=developer)
-    assert again.status_code == 409
+    assert again.status_code == 201
+    assert again.json()["workspace"]["id"] == workspace["id"]
 
 
 async def test_invite_requires_admin_role(client: httpx.AsyncClient) -> None:

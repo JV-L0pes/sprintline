@@ -8,7 +8,7 @@
 
 > Codename interno: `cadencia` (pacotes `@cadencia/*`, pacote Python `cadencia`, envs `CADENCIA_*`).
 
-**Demo:** [sprintline-web.vercel.app](https://sprintline-web.vercel.app) · API + docs: [sprintline-api.vercel.app/docs](https://sprintline-api.vercel.app/docs) · login `demo@cadencia.dev` / `cadencia-demo-2026` (workspace de demonstração).
+**Live:** [sprintline-web.vercel.app](https://sprintline-web.vercel.app) · API + docs: [sprintline-api.vercel.app/docs](https://sprintline-api.vercel.app/docs). Acesso **privado, somente por convite** (`CADENCIA_REGISTRATION_MODE=invite_only`): um admin gera o link de convite nas configurações do workspace; não há cadastro aberto nem conta de demonstração.
 
 ---
 
@@ -54,7 +54,7 @@ pnpm api:dev       # http://localhost:8000 (docs em /docs)
 pnpm web:dev       # http://localhost:5173 (proxy /api -> :8000)
 ```
 
-Credenciais da demo: `demo@cadencia.dev` / `cadencia-demo-2026`. O banco fica em
+O seed de demonstracao (`pnpm api:seed`) cria `demo@cadencia.dev` / `cadencia-demo-2026` **apenas localmente** (recusa rodar em producao sem --force). O banco fica em
 `apps/api/cadencia.db` (apague o arquivo para recomeçar). Para Jira/Trello reais, copie
 `apps/api/.env.example` para `apps/api/.env` e preencha `CADENCIA_JIRA_CLIENT_ID/SECRET`
 e/ou `CADENCIA_TRELLO_API_KEY`.

@@ -82,6 +82,89 @@ async def get_board(
     return schemas.BoardOut.model_validate(view)
 
 
+@router.post(
+    "/projects/{project_id}/board/columns",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_column(
+    project_id: uuid.UUID,
+    payload: schemas.ColumnCreateRequest,
+    access: WorkspaceAccessDep,
+    session: SessionDep,
+) -> schemas.BoardOut:
+    repos = _repos(session)
+    use_case = use_cases.CreateBoardColumn(
+        projects=repos.projects, boards=repos.boards, items=repos.items
+    )
+    view = await use_case.execute(
+        workspace_id=access.workspace.id,
+        project_id=project_id,
+        name=payload.name,
+        category=payload.category,
+        wip_limit=payload.wip_limit,
+    )
+    return schemas.BoardOut.model_validate(view)
+
+
+@router.patch("/projects/{project_id}/board/columns/{column_id}")
+async def update_column(
+    project_id: uuid.UUID,
+    column_id: uuid.UUID,
+    payload: schemas.ColumnUpdateRequest,
+    access: WorkspaceAccessDep,
+    session: SessionDep,
+) -> schemas.BoardOut:
+    repos = _repos(session)
+    use_case = use_cases.UpdateBoardColumn(
+        projects=repos.projects, boards=repos.boards, items=repos.items
+    )
+    view = await use_case.execute(
+        workspace_id=access.workspace.id,
+        project_id=project_id,
+        column_id=column_id,
+        name=payload.name,
+        wip_limit=payload.wip_limit,
+        clear_wip=payload.clear_wip,
+    )
+    return schemas.BoardOut.model_validate(view)
+
+
+@router.delete("/projects/{project_id}/board/columns/{column_id}")
+async def delete_column(
+    project_id: uuid.UUID,
+    column_id: uuid.UUID,
+    access: WorkspaceAccessDep,
+    session: SessionDep,
+) -> schemas.BoardOut:
+    repos = _repos(session)
+    use_case = use_cases.DeleteBoardColumn(
+        projects=repos.projects, boards=repos.boards, items=repos.items
+    )
+    view = await use_case.execute(
+        workspace_id=access.workspace.id, project_id=project_id, column_id=column_id
+    )
+    return schemas.BoardOut.model_validate(view)
+
+
+@router.put("/projects/{project_id}/board/columns/order")
+async def reorder_columns(
+    project_id: uuid.UUID,
+    payload: schemas.ColumnOrderRequest,
+    access: WorkspaceAccessDep,
+    session: SessionDep,
+) -> schemas.BoardOut:
+    repos = _repos(session)
+    use_case = use_cases.ReorderBoardColumns(
+        projects=repos.projects, boards=repos.boards, items=repos.items
+    )
+    view = await use_case.execute(
+        workspace_id=access.workspace.id,
+        project_id=project_id,
+        column_ids=payload.column_ids,
+    )
+    return schemas.BoardOut.model_validate(view)
+
+
 @router.get("/projects/{project_id}/items")
 async def list_items(
     project_id: uuid.UUID, access: WorkspaceAccessDep, session: SessionDep

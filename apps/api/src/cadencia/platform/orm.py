@@ -12,6 +12,16 @@ from sqlalchemy.orm import Mapped, mapped_column
 from cadencia.platform.db import Base, JSONVariant
 
 
+class RateLimitHitRow(Base):
+    """Contador de tentativas por chave/janela (rate limit do auth)."""
+
+    __tablename__ = "rate_limit_hits"
+
+    key: Mapped[str] = mapped_column(sa.String(255), primary_key=True)
+    window_start: Mapped[datetime] = mapped_column(sa.DateTime(timezone=True))
+    count: Mapped[int] = mapped_column(sa.Integer, default=1)
+
+
 class DomainEventRow(Base):
     """Fonte de verdade para metricas e auditoria. Nunca sofre UPDATE/DELETE (RN-25)."""
 

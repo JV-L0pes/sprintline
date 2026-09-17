@@ -94,6 +94,16 @@ class SqlUserRepository:
             occurred_at=clock_for(self._session).now(),
         )
 
+    async def save(self, user: User) -> None:
+        row = await self._session.get(orm.UserRow, user.id)
+        if row is None:
+            await self.add(user)
+            return
+        row.name = user.name
+        row.password_hash = user.password_hash
+        row.locale = user.locale
+        await self._session.flush()
+
 
 class SqlOrganizationRepository:
     def __init__(self, session: AsyncSession) -> None:
@@ -205,6 +215,18 @@ class SqlMembershipRepository:
             occurred_at=clock_for(self._session).now(),
         )
 
+    async def save(self, membership: Membership) -> None:
+        row = await self._session.get(orm.MembershipRow, membership.id)
+        if row is not None:
+            row.role = membership.role.value
+            await self._session.flush()
+
+    async def remove(self, membership: Membership) -> None:
+        row = await self._session.get(orm.MembershipRow, membership.id)
+        if row is not None:
+            await self._session.delete(row)
+            await self._session.flush()
+
 
 class SqlInviteRepository:
     def __init__(self, session: AsyncSession) -> None:
@@ -311,6 +333,14 @@ class SqlSessionRepository:
         await self._session.execute(
             sa.update(orm.SessionRow)
             .where(orm.SessionRow.family_id == family_id, orm.SessionRow.revoked_at.is_(None))
+            .values(revoked_at=now)
+        )
+        await self._session.flush()
+
+    async def revoke_all_for_user(self, user_id: uuid.UUID, now: datetime) -> None:
+        await self._session.execute(
+            sa.update(orm.SessionRow)
+            .where(orm.SessionRow.user_id == user_id, orm.SessionRow.revoked_at.is_(None))
             .values(revoked_at=now)
         )
         await self._session.flush()

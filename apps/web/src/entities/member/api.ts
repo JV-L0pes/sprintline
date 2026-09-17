@@ -25,6 +25,44 @@ export function useInviteMember(workspaceId: string) {
   });
 }
 
+export function useUpdateMemberRole(workspaceId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: string }) =>
+      apiRequest<Member>(`/api/v1/workspaces/${workspaceId}/members/${userId}`, {
+        method: "PATCH",
+        body: { role },
+      }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.members(workspaceId) });
+      await client.invalidateQueries({ queryKey: queryKeys.workspaces });
+    },
+  });
+}
+
+export function useRemoveMember(workspaceId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiRequest<undefined>(`/api/v1/workspaces/${workspaceId}/members/${userId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.members(workspaceId) });
+    },
+  });
+}
+
+export function useResetMemberPassword(workspaceId: string) {
+  return useMutation({
+    mutationFn: ({ userId, newPassword }: { userId: string; newPassword: string }) =>
+      apiRequest<undefined>(`/api/v1/workspaces/${workspaceId}/members/${userId}/password`, {
+        method: "POST",
+        body: { new_password: newPassword },
+      }),
+  });
+}
+
 export function useAcceptInvite() {
   const client = useQueryClient();
   return useMutation({

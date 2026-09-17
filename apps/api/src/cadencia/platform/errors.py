@@ -10,7 +10,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from cadencia.shared.errors import DomainError
+from cadencia.shared.errors import DomainError, RateLimitError
 
 logger = logging.getLogger("cadencia.errors")
 
@@ -25,6 +25,7 @@ def problem(
     title: str | None = None,
     instance: str | None = None,
     extra: dict[str, Any] | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     body: dict[str, Any] = {
         "type": f"https://docs.cadencia.dev/errors/{code.lower()}",
@@ -37,17 +38,26 @@ def problem(
         body["instance"] = instance
     if extra:
         body["errors"] = extra
-    return JSONResponse(status_code=status, content=body, media_type=PROBLEM_CONTENT_TYPE)
+    return JSONResponse(
+        status_code=status,
+        content=body,
+        media_type=PROBLEM_CONTENT_TYPE,
+        headers=headers,
+    )
 
 
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(DomainError)
     async def domain_error_handler(request: Request, exc: DomainError) -> JSONResponse:
+        headers = None
+        if isinstance(exc, RateLimitError):
+            headers = {"Retry-After": str(exc.retry_after_seconds)}
         return problem(
             status=exc.http_status,
             code=exc.code,
             detail=exc.detail,
             instance=str(request.url.path),
+            headers=headers,
         )
 
     @app.exception_handler(RequestValidationError)

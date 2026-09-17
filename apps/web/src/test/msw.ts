@@ -5,6 +5,9 @@ export const handlers = [
   http.post("*/api/v1/auth/refresh", () =>
     HttpResponse.json({ code: "SESSION_NOT_FOUND", detail: "Sessao ausente" }, { status: 401 }),
   ),
+  http.get("*/api/v1/meta", () =>
+    HttpResponse.json({ app_name: "Sprintline", registration_mode: "open" }),
+  ),
 ];
 
 export const server = setupServer(...handlers);

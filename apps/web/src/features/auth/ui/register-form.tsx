@@ -15,7 +15,13 @@ const schema = z.object({
 
 type RegisterValues = z.infer<typeof schema>;
 
-export function RegisterForm() {
+export function RegisterForm({
+  inviteToken,
+  redirectTo = "/",
+}: {
+  inviteToken?: string;
+  redirectTo?: string;
+}) {
   const { t, language } = useI18n();
   const { register: registerUser } = useSession();
   const navigate = useNavigate();
@@ -26,8 +32,8 @@ export function RegisterForm() {
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      await registerUser({ ...values, locale: language });
-      await navigate("/");
+      await registerUser({ ...values, locale: language, inviteToken });
+      await navigate(redirectTo);
     } catch (error) {
       const apiError = error as { code?: string; detail?: string };
       form.setError("root", {

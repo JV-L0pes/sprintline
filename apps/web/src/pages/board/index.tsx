@@ -5,6 +5,7 @@ import { useBoard } from "@/entities/board/api";
 import { useProjects } from "@/entities/project/api";
 import { useSprints } from "@/entities/sprint/api";
 import { sortSprints } from "@/entities/sprint/model";
+import { ColumnsDialog } from "@/features/board-columns/ui/columns-dialog";
 import { CreateSprintDialog } from "@/features/sprint/ui/sprint-dialogs";
 import { ItemDialog } from "@/features/work-item/ui/item-dialog";
 import type { WorkItem, Workspace } from "@/shared/api/types";
@@ -29,6 +30,7 @@ export function BoardPage() {
     item: null,
   });
   const [sprintDialog, setSprintDialog] = useState(false);
+  const [columnsDialog, setColumnsDialog] = useState(false);
   useReveal([board.data]);
 
   if (!workspace || !project) {
@@ -50,6 +52,15 @@ export function BoardPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <ProjectNav slug={workspace.slug} projectKey={project.key} />
         <div className="flex gap-3">
+          <Button
+            variant="outline"
+            disabled={!board.data}
+            onClick={() => {
+              setColumnsDialog(true);
+            }}
+          >
+            {t("board.columns")}
+          </Button>
           <Button
             variant="outline"
             onClick={() => {
@@ -101,6 +112,17 @@ export function BoardPage() {
         workspaceId={workspace.id}
         projectId={project.id}
       />
+      {board.data ? (
+        <ColumnsDialog
+          open={columnsDialog}
+          onClose={() => {
+            setColumnsDialog(false);
+          }}
+          workspaceId={workspace.id}
+          projectId={project.id}
+          board={board.data}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/shared/api/client";
 import { queryKeys } from "@/shared/api/query";
 import type { Board, WorkItem } from "@/shared/api/types";
@@ -25,6 +25,86 @@ export function groupItemsByColumn(board: Board): Map<string, WorkItem[]> {
     }
   }
   return grouped;
+}
+
+type ColumnPatch = { name?: string; wip_limit?: number | null; clear_wip?: boolean };
+
+interface CreateColumnInput {
+  name: string;
+  category: string;
+  wip_limit?: number | null;
+}
+
+export function useCreateColumn(workspaceId: string, projectId: string) {
+  const client = useQueryClient();
+  const boardKey = queryKeys.board(workspaceId, projectId);
+  return useMutation({
+    mutationFn: (input: CreateColumnInput) =>
+      apiRequest<Board>(`/api/v1/workspaces/${workspaceId}/projects/${projectId}/board/columns`, {
+        method: "POST",
+        body: input,
+      }),
+    onSuccess: (board) => {
+      client.setQueryData(boardKey, board);
+    },
+    onSettled: async () => {
+      await client.invalidateQueries({ queryKey: boardKey });
+    },
+  });
+}
+
+export function useUpdateColumn(workspaceId: string, projectId: string) {
+  const client = useQueryClient();
+  const boardKey = queryKeys.board(workspaceId, projectId);
+  return useMutation({
+    mutationFn: ({ columnId, patch }: { columnId: string; patch: ColumnPatch }) =>
+      apiRequest<Board>(
+        `/api/v1/workspaces/${workspaceId}/projects/${projectId}/board/columns/${columnId}`,
+        { method: "PATCH", body: patch },
+      ),
+    onSuccess: (board) => {
+      client.setQueryData(boardKey, board);
+    },
+    onSettled: async () => {
+      await client.invalidateQueries({ queryKey: boardKey });
+    },
+  });
+}
+
+export function useDeleteColumn(workspaceId: string, projectId: string) {
+  const client = useQueryClient();
+  const boardKey = queryKeys.board(workspaceId, projectId);
+  return useMutation({
+    mutationFn: (columnId: string) =>
+      apiRequest<Board>(
+        `/api/v1/workspaces/${workspaceId}/projects/${projectId}/board/columns/${columnId}`,
+        { method: "DELETE" },
+      ),
+    onSuccess: (board) => {
+      client.setQueryData(boardKey, board);
+    },
+    onSettled: async () => {
+      await client.invalidateQueries({ queryKey: boardKey });
+    },
+  });
+}
+
+export function useReorderColumns(workspaceId: string, projectId: string) {
+  const client = useQueryClient();
+  const boardKey = queryKeys.board(workspaceId, projectId);
+  return useMutation({
+    mutationFn: (columnIds: string[]) =>
+      apiRequest<Board>(
+        `/api/v1/workspaces/${workspaceId}/projects/${projectId}/board/columns/order`,
+        { method: "PUT", body: { column_ids: columnIds } },
+      ),
+    onSuccess: (board) => {
+      client.setQueryData(boardKey, board);
+    },
+    onSettled: async () => {
+      await client.invalidateQueries({ queryKey: boardKey });
+    },
+  });
 }
 
 /**

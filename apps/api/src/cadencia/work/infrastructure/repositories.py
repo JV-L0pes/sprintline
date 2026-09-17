@@ -270,6 +270,7 @@ class SqlBoardRepository:
             .scalars()
             .all()
         }
+        kept_ids = {column.id for column in board.columns}
         for column in board.columns:
             column_row = existing.get(column.id)
             if column_row is None:
@@ -288,6 +289,9 @@ class SqlBoardRepository:
                 column_row.position = column.position
                 column_row.category = column.category.value
                 column_row.wip_limit = column.wip_limit
+        for column_id, column_row in existing.items():
+            if column_id not in kept_ids:
+                await self._session.delete(column_row)
         await self._session.flush()
 
 

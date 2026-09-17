@@ -1,4 +1,10 @@
 export type Role = "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+export type RegistrationMode = "open" | "invite_only" | "closed";
+
+export interface Meta {
+  app_name: string;
+  registration_mode: RegistrationMode;
+}
 export type WorkItemType = "EPIC" | "STORY" | "TASK" | "BUG" | "SUBTASK";
 export type StatusCategory = "TODO" | "IN_PROGRESS" | "DONE";
 export type SprintState = "PLANNED" | "ACTIVE" | "COMPLETED";

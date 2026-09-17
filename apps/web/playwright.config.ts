@@ -38,6 +38,9 @@ export default defineConfig({
           env: {
             CADENCIA_ENVIRONMENT: "development",
             CADENCIA_DATABASE_URL: "sqlite+aiosqlite:///./cadencia-e2e.db",
+            CADENCIA_REGISTRATION_MODE: "open",
+            CADENCIA_REGISTER_MAX_ATTEMPTS: "10000",
+            CADENCIA_LOGIN_MAX_ATTEMPTS: "10000",
           },
         },
         {

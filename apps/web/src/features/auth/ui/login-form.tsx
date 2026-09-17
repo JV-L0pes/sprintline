@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useSession } from "@/entities/session";
+import { useMeta } from "@/shared/api/meta";
 import { translateErrorCode, useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
 import { Field, Input } from "@/shared/ui/input";
@@ -17,6 +18,7 @@ type LoginValues = z.infer<typeof schema>;
 export function LoginForm() {
   const { t } = useI18n();
   const { login } = useSession();
+  const meta = useMeta();
   const navigate = useNavigate();
   const form = useForm<LoginValues>({
     resolver: zodResolver(schema),
@@ -62,12 +64,17 @@ export function LoginForm() {
       <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
         {t("auth.loginCta")}
       </Button>
-      <p className="text-sm text-ash">
-        {t("auth.noAccount")}{" "}
-        <Link to="/register" className="plain">
-          {t("auth.signUp")}
-        </Link>
-      </p>
+      {meta.data?.registration_mode === "invite_only" ||
+      meta.data?.registration_mode === "closed" ? (
+        <p className="text-sm text-ash">{t("auth.inviteOnly")}</p>
+      ) : (
+        <p className="text-sm text-ash">
+          {t("auth.noAccount")}{" "}
+          <Link to="/register" className="plain">
+            {t("auth.signUp")}
+          </Link>
+        </p>
+      )}
     </form>
   );
 }

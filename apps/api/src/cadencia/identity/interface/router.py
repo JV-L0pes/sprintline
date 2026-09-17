@@ -6,16 +6,21 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, Request, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from cadencia.identity.application.use_cases import (
     AcceptInvite,
     AuthenticateUser,
+    ChangeMemberRole,
+    ChangeOwnPassword,
     CreateWorkspace,
     EndSession,
     InviteMember,
     ListMembers,
     ListWorkspaces,
     RegisterUser,
+    RemoveMember,
+    ResetMemberPassword,
     RotateSession,
     StartSession,
 )
@@ -38,9 +43,21 @@ from cadencia.identity.interface.deps import (
     get_token_issuer,
 )
 from cadencia.platform.config import Settings
-from cadencia.shared.errors import UnauthorizedError
+from cadencia.platform.rate_limit import RateLimiter, client_ip
+from cadencia.shared.errors import ForbiddenError, NotFoundError, UnauthorizedError
 
 router = APIRouter(prefix="/api/v1", tags=["identity"])
+
+
+def _client_ip(request: Request) -> str:
+    return client_ip(
+        request.headers.get("x-forwarded-for"),
+        request.client.host if request.client else None,
+    )
+
+
+def _limiter(session: AsyncSession) -> RateLimiter:
+    return RateLimiter(session, get_clock())
 
 
 def _set_refresh_cookie(
@@ -60,13 +77,45 @@ def _set_refresh_cookie(
 @router.post("/auth/register", status_code=status.HTTP_201_CREATED)
 async def register(
     payload: schemas.RegisterRequest,
+    request: Request,
     session: SessionDep,
 ) -> schemas.UserOut:
-    use_case = RegisterUser(SqlUserRepository(session), get_password_hasher(), get_clock())
+    settings = request.app.state.settings
+    clock = get_clock()
+    await _limiter(session).enforce(
+        f"register:ip:{_client_ip(request)}",
+        limit=settings.register_max_attempts,
+        window_minutes=settings.register_window_minutes,
+        label="registro",
+    )
+    if settings.registration_mode == "closed":
+        raise ForbiddenError("Registro desabilitado neste servidor", code="REGISTRATION_CLOSED")
+
+    if payload.invite_token:
+        tokens = get_token_issuer(request)
+        invite = await SqlInviteRepository(session).find_by_token_hash(
+            tokens.hash_opaque_token(payload.invite_token)
+        )
+        if invite is None:
+            raise NotFoundError("Convite nao encontrado", code="INVITE_NOT_FOUND")
+        invite.validate_for(user_email=payload.email, now=clock.now())
+    elif settings.is_registration_invite_only:
+        raise ForbiddenError(
+            "Registro somente por convite: peça um link a um admin",
+            code="REGISTRATION_INVITE_REQUIRED",
+        )
+
+    use_case = RegisterUser(SqlUserRepository(session), get_password_hasher(), clock)
     user = await use_case.execute(
         email=payload.email, name=payload.name, password=payload.password, locale=payload.locale
     )
     return schemas.UserOut(id=user.id, email=user.email, name=user.name, locale=user.locale)
+
+
+@router.get("/meta")
+async def meta(request: Request) -> schemas.MetaOut:
+    settings = request.app.state.settings
+    return schemas.MetaOut(app_name=settings.app_name, registration_mode=settings.registration_mode)
 
 
 @router.post("/auth/login")
@@ -76,8 +125,24 @@ async def login(
     session: SessionDep,
     request: Request,
 ) -> schemas.SessionOut:
+    settings = request.app.state.settings
+    limiter = _limiter(session)
+    await limiter.enforce(
+        f"login:ip:{_client_ip(request)}",
+        limit=settings.login_max_attempts,
+        window_minutes=settings.login_window_minutes,
+        label="login",
+    )
+    email_key = f"login:email:{payload.email.strip().lower()}"
+    await limiter.enforce(
+        email_key,
+        limit=settings.login_max_attempts,
+        window_minutes=settings.login_window_minutes,
+        label="login",
+    )
     authenticator = AuthenticateUser(SqlUserRepository(session), get_password_hasher())
     user = await authenticator.execute(email=payload.email, password=payload.password)
+    await limiter.clear(email_key)
     starter = StartSession(SqlSessionRepository(session), get_token_issuer(request), get_clock())
     session_view = await starter.execute(user)
     _set_refresh_cookie(
@@ -99,6 +164,13 @@ async def refresh(
     response: Response,
     session: SessionDep,
 ) -> schemas.SessionOut:
+    settings = request.app.state.settings
+    await _limiter(session).enforce(
+        f"refresh:ip:{_client_ip(request)}",
+        limit=settings.refresh_max_attempts,
+        window_minutes=settings.refresh_window_minutes,
+        label="refresh",
+    )
     raw = request.cookies.get(request.app.state.settings.cookie_name)
     if not raw:
         raise UnauthorizedError("Sessao ausente", code="SESSION_NOT_FOUND")
@@ -242,4 +314,86 @@ async def accept_invite(
         workspace=schemas.WorkspaceOut(
             id=view.id, name=view.name, slug=view.slug, timezone=view.timezone, role=view.role
         )
+    )
+
+
+@router.post("/auth/password", status_code=status.HTTP_204_NO_CONTENT)
+async def change_own_password(
+    payload: schemas.PasswordChangeRequest, user: CurrentUser, session: SessionDep
+) -> None:
+    await ChangeOwnPassword(
+        SqlUserRepository(session),
+        SqlSessionRepository(session),
+        get_password_hasher(),
+        get_clock(),
+    ).execute(
+        user=user,
+        current_password=payload.current_password,
+        new_password=payload.new_password,
+    )
+
+
+@router.patch("/workspaces/{workspace_id}/members/{user_id}")
+async def change_member_role(
+    user_id: uuid.UUID,
+    payload: schemas.MemberRoleUpdateRequest,
+    access: AdminAccessDep,
+    session: SessionDep,
+) -> schemas.MemberOut:
+    view = await ChangeMemberRole(
+        SqlMembershipRepository(session), SqlUserRepository(session)
+    ).execute(
+        actor_id=access.user.id,
+        actor_role=access.role,
+        workspace_id=access.workspace.id,
+        target_user_id=user_id,
+        new_role=payload.role,
+    )
+    return schemas.MemberOut(
+        user_id=view.user_id,
+        name=view.name,
+        email=view.email,
+        role=view.role,
+        joined_at=view.joined_at,
+    )
+
+
+@router.delete(
+    "/workspaces/{workspace_id}/members/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def remove_member(
+    user_id: uuid.UUID,
+    access: AdminAccessDep,
+    session: SessionDep,
+) -> None:
+    await RemoveMember(SqlMembershipRepository(session)).execute(
+        actor_id=access.user.id,
+        actor_role=access.role,
+        workspace_id=access.workspace.id,
+        target_user_id=user_id,
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/members/{user_id}/password",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def reset_member_password(
+    user_id: uuid.UUID,
+    payload: schemas.MemberPasswordRequest,
+    access: AdminAccessDep,
+    session: SessionDep,
+) -> None:
+    await ResetMemberPassword(
+        SqlMembershipRepository(session),
+        SqlUserRepository(session),
+        SqlSessionRepository(session),
+        get_password_hasher(),
+        get_clock(),
+    ).execute(
+        actor_role=access.role,
+        workspace_id=access.workspace.id,
+        target_user_id=user_id,
+        new_password=payload.new_password,
     )

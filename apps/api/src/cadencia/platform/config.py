@@ -32,6 +32,24 @@ class Settings(BaseSettings):
     cookie_name: str = "cadencia_refresh"
     cookie_secure: bool = False
 
+    app_name: str = "Sprintline"
+    # open | invite_only | closed — padrao seguro para uso privado
+    registration_mode: str = "invite_only"
+    login_max_attempts: int = 10
+    login_window_minutes: int = 15
+    register_max_attempts: int = 5
+    register_window_minutes: int = 60
+    refresh_max_attempts: int = 120
+    refresh_window_minutes: int = 60
+
+    @property
+    def is_registration_open(self) -> bool:
+        return self.registration_mode == "open"
+
+    @property
+    def is_registration_invite_only(self) -> bool:
+        return self.registration_mode == "invite_only"
+
     integration_secret_key: str | None = None
 
     jira_client_id: str = ""

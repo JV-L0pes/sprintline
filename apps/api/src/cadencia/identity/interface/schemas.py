@@ -17,6 +17,7 @@ class RegisterRequest(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     password: str = Field(min_length=PASSWORD_MIN_LENGTH, max_length=128)
     locale: str = Field(default="pt-BR", max_length=10)
+    invite_token: str | None = Field(default=None, max_length=200)
 
 
 class LoginRequest(BaseModel):
@@ -71,3 +72,21 @@ class InviteOut(BaseModel):
 
 class AcceptInviteOut(BaseModel):
     workspace: WorkspaceOut
+
+
+class MemberRoleUpdateRequest(BaseModel):
+    role: Role
+
+
+class MemberPasswordRequest(BaseModel):
+    new_password: str = Field(min_length=PASSWORD_MIN_LENGTH, max_length=128)
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=PASSWORD_MIN_LENGTH, max_length=128)
+
+
+class MetaOut(BaseModel):
+    app_name: str
+    registration_mode: str

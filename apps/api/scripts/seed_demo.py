@@ -10,6 +10,7 @@ Uso:
 from __future__ import annotations
 
 import asyncio
+import sys
 from datetime import UTC, date, datetime, time, timedelta
 
 from cadencia.identity.application.use_cases import CreateWorkspace, RegisterUser
@@ -84,6 +85,12 @@ async def _move_to_category(
 
 async def seed() -> None:
     settings = get_settings()
+    if settings.is_production and "--force" not in sys.argv:
+        print(
+            "Recusando rodar o seed de demonstracao em producao "
+            "(use --force se for realmente isso que voce quer)."
+        )
+        return
     engine = build_engine(settings)
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)

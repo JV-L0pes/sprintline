@@ -69,6 +69,9 @@ class User(AggregateRoot):
         user._record(UserRegistered(email=user.email))
         return user
 
+    def set_password_hash(self, password_hash: str) -> None:
+        self.password_hash = password_hash
+
 
 @dataclass(frozen=True)
 class WorkspaceCreated(DomainEvent):
@@ -170,6 +173,9 @@ class Membership(AggregateRoot):
         membership._record(MemberJoined(user_id=user_id, role=role))
         return membership
 
+    def change_role(self, new_role: Role) -> None:
+        self.role = new_role
+
 
 @dataclass(frozen=True)
 class MemberInvited(DomainEvent):
@@ -230,13 +236,17 @@ class Invite(AggregateRoot):
     def is_open(self, now: datetime) -> bool:
         return self.accepted_at is None and self.expires_at > now
 
-    def accept(self, *, user_email: str, now: datetime) -> None:
+    def validate_for(self, *, user_email: str, now: datetime) -> None:
+        """Mesmas checagens do accept, sem consumir o convite."""
         if self.accepted_at is not None:
             raise ConflictError("Convite ja utilizado", code="INVITE_ALREADY_USED")
         if self.expires_at <= now:
             raise ConflictError("Convite expirado", code="INVITE_EXPIRED")
         if normalize_email(user_email) != self.email:
             raise ForbiddenError("Convite emitido para outro email", code="INVITE_EMAIL_MISMATCH")
+
+    def accept(self, *, user_email: str, now: datetime) -> None:
+        self.validate_for(user_email=user_email, now=now)
         self.accepted_at = now
         self._record(InviteAccepted(email=self.email))
 

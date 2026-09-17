@@ -10,6 +10,10 @@ from typing import Any
 os.environ.setdefault("CADENCIA_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("CADENCIA_JWT_SECRET", "test-secret-do-not-use-in-prod")
 os.environ.setdefault("CADENCIA_ENVIRONMENT", "test")
+os.environ.setdefault("CADENCIA_REGISTRATION_MODE", "open")
+os.environ.setdefault("CADENCIA_REGISTER_MAX_ATTEMPTS", "10000")
+os.environ.setdefault("CADENCIA_LOGIN_MAX_ATTEMPTS", "10000")
+os.environ.setdefault("CADENCIA_REFRESH_MAX_ATTEMPTS", "10000")
 
 logging.getLogger().setLevel(logging.WARNING)
 logging.getLogger("aiosqlite").setLevel(logging.WARNING)

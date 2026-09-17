@@ -1,8 +1,11 @@
+import { useEffect, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAcceptInvite } from "@/entities/member/api";
 import { useSession } from "@/entities/session";
+import { RegisterForm } from "@/features/auth/ui/register-form";
+import { LanguageSwitch } from "@/features/shell/ui/language-switch";
+import { ThemeToggle } from "@/features/shell/ui/theme-toggle";
 import { useI18n } from "@/shared/i18n";
-import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/ui/toast";
 
 export function InvitePage() {
@@ -12,46 +15,71 @@ export function InvitePage() {
   const { token } = useParams<{ token: string }>();
   const { status } = useSession();
   const accept = useAcceptInvite();
+  const started = useRef(false);
 
-  if (status !== "authenticated") {
+  useEffect(() => {
+    if (status !== "authenticated" || !token || started.current) {
+      return;
+    }
+    started.current = true;
+    accept.mutate(token, {
+      onSuccess: (result) => {
+        void navigate(`/w/${result.workspace.slug}`, { replace: true });
+      },
+      onError: (error) => {
+        toast.pushError(error);
+      },
+    });
+  }, [accept, navigate, status, t, toast, token]);
+
+  if (status === "booting") {
     return (
-      <main className="shell grid min-h-screen place-content-center gap-6 text-center">
-        <h1 className="text-3xl">{t("members.inviteTitle")}</h1>
-        <p className="lede mx-auto max-w-md">{t("members.inviteHint")}</p>
-        <div className="flex justify-center gap-4">
-          <Link to="/register" className="pill">
-            {t("auth.signUp")}
+      <main className="shell grid min-h-screen place-content-center">
+        <p className="mono text-ash">{t("common.loading")}…</p>
+      </main>
+    );
+  }
+
+  if (status === "authenticated") {
+    return (
+      <main className="shell grid min-h-screen place-content-center gap-4 text-center">
+        <p className="kicker">{t("members.inviteTitle")}</p>
+        <h1 className="text-3xl">{t("invite.accepting")}</h1>
+        {accept.isError ? (
+          <Link to="/" className="pill mx-auto">
+            {t("common.back")}
           </Link>
-          <Link to="/login" className="plain">
-            {t("auth.signIn")}
-          </Link>
-        </div>
+        ) : null}
       </main>
     );
   }
 
   return (
-    <main className="shell grid min-h-screen place-content-center gap-6 text-center">
-      <h1 className="text-3xl">{t("members.inviteTitle")}</h1>
-      <Button
-        disabled={accept.isPending}
-        onClick={() => {
-          if (!token) {
-            toast.pushError(new Error("missing token"));
-            return;
-          }
-          accept.mutate(token, {
-            onSuccess: (result) => {
-              void navigate(`/w/${result.workspace.slug}`);
-            },
-            onError: (error) => {
-              toast.pushError(error);
-            },
-          });
-        }}
-      >
-        {t("common.confirm")}
-      </Button>
+    <main className="shell flex min-h-screen flex-col">
+      <header className="bar stuck">
+        <div className="shell bar-in justify-end">
+          <LanguageSwitch />
+          <ThemeToggle />
+        </div>
+      </header>
+      <div className="mx-auto grid w-full max-w-md flex-1 content-center gap-8 py-24">
+        <div className="grid gap-3">
+          <p className="kicker">{t("members.inviteTitle")}</p>
+          <h1 className="text-4xl">
+            <span className="line on">
+              <span>{t("invite.needAccount")}</span>
+            </span>
+          </h1>
+          <p className="mono text-ash">{t("invite.expiresHint")}</p>
+        </div>
+        <RegisterForm inviteToken={token} redirectTo={`/invite/${token ?? ""}`} />
+        <p className="text-sm text-ash">
+          {t("invite.alreadyHave")}{" "}
+          <Link to="/login" className="plain">
+            {t("auth.signIn")}
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

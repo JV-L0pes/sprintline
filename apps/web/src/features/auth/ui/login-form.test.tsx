@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http } from "msw";
@@ -11,16 +12,19 @@ import { problemResponse, server } from "@/test/msw";
 import { LoginForm } from "./login-form";
 
 function renderForm() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <I18nProvider>
       <ThemeProvider>
-        <SessionProvider>
-          <ToastProvider>
-            <MemoryRouter>
-              <LoginForm />
-            </MemoryRouter>
-          </ToastProvider>
-        </SessionProvider>
+        <QueryClientProvider client={queryClient}>
+          <SessionProvider>
+            <ToastProvider>
+              <MemoryRouter>
+                <LoginForm />
+              </MemoryRouter>
+            </ToastProvider>
+          </SessionProvider>
+        </QueryClientProvider>
       </ThemeProvider>
     </I18nProvider>,
   );

@@ -40,3 +40,12 @@ class UnauthorizedError(DomainError):
 class ForbiddenError(DomainError):
     default_code: ClassVar[str] = "FORBIDDEN"
     http_status: ClassVar[int] = 403
+
+
+class RateLimitError(DomainError):
+    default_code: ClassVar[str] = "RATE_LIMITED"
+    http_status: ClassVar[int] = 429
+
+    def __init__(self, detail: str, *, retry_after_seconds: int, code: str | None = None) -> None:
+        super().__init__(detail, code=code)
+        self.retry_after_seconds = retry_after_seconds

@@ -1,10 +1,14 @@
+import { Link } from "react-router-dom";
 import { RegisterForm } from "@/features/auth/ui/register-form";
 import { LanguageSwitch } from "@/features/shell/ui/language-switch";
 import { ThemeToggle } from "@/features/shell/ui/theme-toggle";
+import { useMeta } from "@/shared/api/meta";
 import { useI18n } from "@/shared/i18n";
 
 export function RegisterPage() {
   const { t } = useI18n();
+  const meta = useMeta();
+  const closed = meta.data && meta.data.registration_mode !== "open";
   return (
     <main className="shell flex min-h-screen flex-col">
       <header className="bar stuck">
@@ -22,7 +26,16 @@ export function RegisterPage() {
             </span>
           </h1>
         </div>
-        <RegisterForm />
+        {closed ? (
+          <div className="grid gap-4">
+            <p className="lede">{t("auth.inviteOnly")}</p>
+            <Link to="/login" className="plain">
+              {t("auth.signIn")}
+            </Link>
+          </div>
+        ) : (
+          <RegisterForm />
+        )}
       </div>
     </main>
   );

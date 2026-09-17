@@ -146,3 +146,19 @@ class SprintOut(BaseModel):
 
 class CompleteSprintRequest(BaseModel):
     target_sprint_id: uuid.UUID | None = None
+
+
+class ColumnCreateRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
+    category: StatusCategory
+    wip_limit: int | None = Field(default=None, ge=1)
+
+
+class ColumnUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=60)
+    wip_limit: int | None = Field(default=None, ge=1)
+    clear_wip: bool = False
+
+
+class ColumnOrderRequest(BaseModel):
+    column_ids: list[uuid.UUID] = Field(min_length=1)
