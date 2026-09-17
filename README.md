@@ -8,6 +8,8 @@
 
 > Codename interno: `cadencia` (pacotes `@cadencia/*`, pacote Python `cadencia`, envs `CADENCIA_*`).
 
+**Demo:** [sprintline-web.vercel.app](https://sprintline-web.vercel.app) · API + docs: [sprintline-api.vercel.app/docs](https://sprintline-api.vercel.app/docs) · login `demo@cadencia.dev` / `cadencia-demo-2026` (workspace de demonstração).
+
 ---
 
 ## O que é isto
