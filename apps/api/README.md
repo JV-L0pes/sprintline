@@ -9,13 +9,22 @@ Requisitos: [uv](https://docs.astral.sh/uv/) (Python 3.12+).
 ```bash
 uv sync                       # instala dependencias (cria .venv)
 cp .env.example .env          # ajuste se necessario
-uv run python scripts/seed_demo.py
+uv run python scripts/seed_demo.py   # dados de demonstracao (so local; recusa producao sem --force)
 uv run uvicorn cadencia.main:app --reload --port 8000
 ```
 
 - Docs interativas: http://localhost:8000/docs
 - Healthcheck: http://localhost:8000/healthz
 - Banco local padrao: SQLite (`cadencia.db`); producao usa Postgres (Neon) via `CADENCIA_DATABASE_URL`.
+
+## Instancia privada (invite-only)
+
+- `CADENCIA_REGISTRATION_MODE`: `invite_only` (padrao), `open` ou `closed`.
+- Primeiro owner (obrigatorio em instancia fechada):
+  `uv run python scripts/create_admin.py --email voce@exemplo.com --name "Seu Nome"`.
+- Convites: admin gera o link (`POST .../invites`) e a pessoa cadastra-se com `invite_token`.
+- Rate limit: login 10/15min, registro 5/h, refresh 120/h (configuravel por env; 429 + `Retry-After`).
+- Limpeza de demo em producao: `uv run python scripts/purge_demo.py --yes`.
 
 ## Qualidade
 
@@ -42,5 +51,7 @@ A migracao `0001` e metadata-driven; as seguintes devem ser autogeradas contra P
   `requirements.txt` (gerado com `uv export --frozen --no-dev --no-emit-project --no-hashes`).
   Ao mudar o `pyproject.toml`, regenere: `uv lock && uv export ... -o requirements.txt`.
 - Envs obrigatorias: `CADENCIA_DATABASE_URL` (endpoint `-pooler` do Neon), `CADENCIA_JWT_SECRET`,
-  `CADENCIA_INTEGRATION_SECRET_KEY`, `CADENCIA_WEB_BASE_URL`, `CADENCIA_CORS_ORIGINS`, `CADENCIA_COOKIE_SECURE=true`.
+  `CADENCIA_INTEGRATION_SECRET_KEY`, `CADENCIA_WEB_BASE_URL`, `CADENCIA_CORS_ORIGINS`, `CADENCIA_COOKIE_SECURE=true`,
+  `CADENCIA_REGISTRATION_MODE=invite_only` (ver ADR 0010).
 - Migracoes rodam no CI (`alembic upgrade head`), nunca no cold start.
+- Apos o primeiro deploy, rode o bootstrap do owner: `uv run python scripts/create_admin.py ...`.

@@ -1,7 +1,12 @@
 # Plano de Revamp — Burndown Chart → Plataforma de Tracking Ágil
 
-> Documento vivo. Versão 1.0 — 2026-09-16.
-> Autor: João Victor Lopes (JV-L0pes). Status: **aguardando aprovação para iniciar Fase 0**.
+> Documento vivo. Versão 1.0 — 2026-09-16. (Histórico: decisões posteriores em `docs/adr/`.)
+> Autor: João Victor Lopes (JV-L0pes).
+>
+> **Status 2026-09-17:** Fases 0–6 entregues e em produção privada (`sprintline-web.vercel.app`).
+> Mudanças de rumo após o plano: instância **invite-only** sem demo pública (ADR 0010),
+> Turborepo removido (nota no ADR 0001), entry da Vercel é ASGI nativo (ADR 0007), Trello
+> adicionado além do Jira (ADR 0009).
 
 ---
 
@@ -99,7 +104,7 @@ burndown-chart/            (último commit: 2025-09-25)
 4. Backlog com drag-and-drop, sprint planning (criar sprint, puxar itens, capacidade), ciclo de vida da sprint (planning → active → completed).
 5. WIP limits por coluna (limite mole com alerta, configurável).
 6. Métricas geradas do event log: burndown, burnup, velocity, CFD, cycle/lead time, sprint report.
-7. Modo demo público com dataset seed (portfólio + e2e).
+7. ~~Modo demo público com dataset seed (portfólio + e2e).~~ **Decisão posterior (ver ADR 0010): instância privada, invite-only; seed demo apenas local/e2e.**
 
 **Integração:**
 8. Jira Cloud real: conectar (OAuth 2.0 3LO), importar projeto/board/sprints/issues, sync por webhook + reconciliação noturna, mapeamento de campos (story points e sprint são custom fields com IDs variáveis por instância).
@@ -704,11 +709,11 @@ Demo pública seedada, README bilíngue (PT/EN), case study no padrão do portf�
 
 ## 12. Métricas de sucesso do revamp
 
-- **Produto**: burndown do app conferido contra planilha/Jira com erro zero; workspace demo funcional; integração Jira real operando no dia a dia do autor.
+- **Produto**: burndown do app conferido contra planilha/Jira com erro zero; workspace de produção privado em uso; integração Jira real operando no dia a dia do autor.
 - **Qualidade**: domínio ≥95% coberto; zero violação alta em linters de segurança; e2e e a11y verdes; zero `any`/dívida type-check.
-- **Performance**: p95 API <300ms; TTI <2s na demo; Lighthouse ≥95.
+- **Performance**: p95 API <300ms; TTI <2s; Lighthouse ≥95.
 - **Processo**: toda `RN-*`/`RM-*` rastreável até teste; ADRs atualizadas; PRs pequenos com preview.
-- **Portfólio**: case study publicado + demo navegável sem login + README bilíngue.
+- **Portfólio**: case study publicado + instância privada por convite (sem demo público) + README bilíngue.
 
 ---
 

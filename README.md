@@ -99,8 +99,10 @@ cd ../web && npx vercel link         # crie o projeto sprintline-web
 1. **Neon**: crie o banco e use o endpoint `-pooler` (`postgresql+asyncpg://...`).
 2. **Envs da API** (Vercel → sprintline-api): `CADENCIA_DATABASE_URL`, `CADENCIA_JWT_SECRET`,
    `CADENCIA_INTEGRATION_SECRET_KEY`, `CADENCIA_WEB_BASE_URL=https://sprintline-web.vercel.app`,
-   `CADENCIA_CORS_ORIGINS=https://sprintline-web.vercel.app`, `CADENCIA_COOKIE_SECURE=true`.
+   `CADENCIA_CORS_ORIGINS=https://sprintline-web.vercel.app`, `CADENCIA_COOKIE_SECURE=true`,
+   `CADENCIA_REGISTRATION_MODE=invite_only` (ADR 0010).
    Entry: `api/index.py` (ASGI detectado automaticamente; deps via `requirements.txt`).
+   Depois do deploy, crie o primeiro owner: `uv run python scripts/create_admin.py --email ... --name ...`.
 3. **Envs do web** (sprintline-web): nenhuma obrigatória (proxy same-origin); opcional `VITE_API_URL`.
 4. **Deploy**: `npx vercel --prod` em cada pasta — ou conecte os dois projetos ao repo e deixe o Git cuidar.
 5. **Migrações**: `CADENCIA_DATABASE_URL=<neon> uv run alembic upgrade head` (local/CI; nunca no cold start).

@@ -34,6 +34,18 @@ Aqui fica a rastreabilidade entre regra, implementação e teste.
 | RM-14 snapshots idempotentes | (cron — Fase 5) | pendente |
 | RM-15 anti-padrões barrados | design do event log + testes de invariantes | `test_metrics_calculators.py` (`hypothesis`) |
 
+## Regras adicionadas após o plano (instância privada)
+
+| Regra | Implementação | Teste |
+|---|---|---|
+| RN-26 registro com modos `open`/`invite_only`/`closed` e token de convite no cadastro | `identity/interface/router.py`, `settings.registration_mode` | `test_identity_management.py::test_registration_requires_invite_when_configured` |
+| RN-27 rate limit do auth (login/registro/refresh) com 429 + `Retry-After`, persistido fora do rollback | `platform/rate_limit.py`, `rate_limit_hits` (migração 0002) | `test_identity_management.py::test_rate_limit_login_returns_429_with_retry_after` |
+| RN-28 gestão de membros: papel, remoção, reset de senha; proteção do último owner e sem escalação/auto-gestão | `identity/application/use_cases.py` (`ChangeMemberRole`, `RemoveMember`, `ResetMemberPassword`) | `test_identity_management.py` |
+| RN-29 troca da própria senha revoga todas as sessões | `ChangeOwnPassword` + `revoke_all_for_user` | `test_identity_management.py::test_change_own_password` |
+| RN-30 colunas do board editáveis (nome, WIP, ordem, adicionar/remover) com ≥1 por categoria e remoção só se vazia | `work/domain/entities.py` (`Board`), `work/application/use_cases.py` | `test_board_columns.py` |
+| RN-31 bootstrap do primeiro owner em instância fechada | `scripts/create_admin.py` | smoke manual (script) |
+| RN-32 purge de dados de demonstração | `scripts/purge_demo.py` + guard no seed | smoke manual (script) |
+
 ## Convenções transversais
 
 - Erros HTTP: RFC 9457 (`application/problem+json`) com `code` estável — `platform/errors.py`.
