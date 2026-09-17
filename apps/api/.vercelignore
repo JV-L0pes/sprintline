@@ -1,0 +1,11 @@
+.venv
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.hypothesis
+.import_linter_cache
+tests
+*.db
+.env.production.local
+.env.local

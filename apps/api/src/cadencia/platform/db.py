@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import sqlalchemy as sa
 from fastapi import Request
@@ -40,8 +41,24 @@ class TimestampMixin:
     updated_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True), default=None)
 
 
+def normalize_database_url(url: str) -> str:
+    """Traduz parametros libpq para o que o asyncpg entende.
+
+    URLs do Neon vem com `?sslmode=require` (padrao libpq); o dialeto asyncpg
+    espera `ssl=require`. `channel_binding` tambem e ignorado.
+    """
+    if not url.startswith("postgresql+asyncpg"):
+        return url
+    parts = urlsplit(url)
+    query = dict(parse_qsl(parts.query))
+    if "sslmode" in query:
+        query["ssl"] = query.pop("sslmode")
+    query.pop("channel_binding", None)
+    return urlunsplit(parts._replace(query=urlencode(query)))
+
+
 def build_engine(settings: Settings) -> AsyncEngine:
-    url = settings.database_url
+    url = normalize_database_url(settings.database_url)
     if url.startswith("sqlite"):
         return create_async_engine(
             url,

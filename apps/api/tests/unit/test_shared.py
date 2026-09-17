@@ -5,8 +5,22 @@ from __future__ import annotations
 import time
 import uuid
 
+from cadencia.platform.db import normalize_database_url
 from cadencia.shared.domain import paginate
 from cadencia.shared.ids import uuid7
+
+
+def test_normalize_database_url_converts_libpq_params() -> None:
+    neon = (
+        "postgresql+asyncpg://user:pass@ep-x-pooler.us-east-1.aws.neon.tech/db"
+        "?sslmode=require&channel_binding=require"
+    )
+    normalized = normalize_database_url(neon)
+    assert "sslmode" not in normalized
+    assert "channel_binding" not in normalized
+    assert "ssl=require" in normalized
+    # URLs que nao sao asyncpg (ex.: sqlite) passam intactas
+    assert normalize_database_url("sqlite+aiosqlite:///./x.db") == "sqlite+aiosqlite:///./x.db"
 
 
 def test_uuid7_is_version_7() -> None:

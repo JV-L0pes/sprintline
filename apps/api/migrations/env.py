@@ -14,7 +14,7 @@ from cadencia.identity.infrastructure import orm as identity_orm  # noqa: F401
 from cadencia.integrations.infrastructure import orm as integrations_orm  # noqa: F401
 from cadencia.platform import orm as platform_orm  # noqa: F401
 from cadencia.platform.config import get_settings
-from cadencia.platform.db import Base
+from cadencia.platform.db import Base, normalize_database_url
 from cadencia.work.infrastructure import orm as work_orm  # noqa: F401
 
 config = context.config
@@ -26,7 +26,7 @@ target_metadata = Base.metadata
 
 
 def _database_url() -> str:
-    return get_settings().database_url
+    return normalize_database_url(get_settings().database_url)
 
 
 def run_migrations_offline() -> None:

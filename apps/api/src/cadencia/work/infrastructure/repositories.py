@@ -238,6 +238,9 @@ class SqlBoardRepository:
 
     async def add(self, board: Board) -> None:
         self._session.add(orm.BoardRow(id=board.id, project_id=board.project_id, name=board.name))
+        # Postgres valida FK de imediato: garante o board antes das colunas
+        # (o ordenamento do flush nao e garantido sem relationship()).
+        await self._session.flush()
         for column in board.columns:
             self._session.add(
                 orm.BoardColumnRow(
