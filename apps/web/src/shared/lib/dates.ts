@@ -2,7 +2,7 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function parseIsoDate(value: string): Date {
   if (!ISO_DATE.test(value)) {
-    throw new Error(`Data ISO invalida: ${value}`);
+    throw new Error(`Data ISO inválida: ${value}`);
   }
   const [year, month, day] = value.split("-").map(Number) as [number, number, number];
   return new Date(Date.UTC(year, month - 1, day));

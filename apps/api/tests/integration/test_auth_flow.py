@@ -1,4 +1,4 @@
-"""Fluxo de autenticacao ponta a ponta na API (RN-03, RN-04, rotacao de refresh)."""
+"""Fluxo de autenticação ponta a ponta na API (RN-03, RN-04, rotação de refresh)."""
 
 from __future__ import annotations
 
@@ -65,12 +65,12 @@ async def test_refresh_rotation_and_reuse_detection(client: httpx.AsyncClient) -
     assert rotated_cookie is not None
     assert rotated_cookie != original_cookie
 
-    # Replay do token antigo: reuse detection revoga a familia inteira.
+    # Replay do token antigo: reuse detection revoga a família inteira.
     replay = await client.post("/api/v1/auth/refresh", headers=cookie_header(original_cookie))
     assert replay.status_code == 401
     assert replay.json()["code"] == "SESSION_REUSE_DETECTED"
 
-    # A familia revogada nao emite mais tokens, nem com o cookie rotacionado.
+    # A família revogada não emite mais tokens, nem com o cookie rotacionado.
     after = await client.post("/api/v1/auth/refresh", headers=cookie_header(rotated_cookie))
     assert after.status_code == 401
 

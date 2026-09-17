@@ -1,6 +1,6 @@
-"""Seed de demonstracao: workspace, projeto, itens e 2 sprints com historico real.
+"""Seed de demonstração: workspace, projeto, itens e 2 sprints com histórico real.
 
-Todo o historico e gerado pelos proprios casos de uso com um FrozenClock,
+Todo o histórico e gerado pelos próprios casos de uso com um FrozenClock,
 garantindo que o event log (e portanto o burndown) seja fiel.
 
 Uso:
@@ -87,8 +87,8 @@ async def seed() -> None:
     settings = get_settings()
     if settings.is_production and "--force" not in sys.argv:
         print(
-            "Recusando rodar o seed de demonstracao em producao "
-            "(use --force se for realmente isso que voce quer)."
+            "Recusando rodar o seed de demonstração em produção "
+            "(use --force se for realmente isso que você quer)."
         )
         return
     engine = build_engine(settings)
@@ -100,7 +100,7 @@ async def seed() -> None:
     async with factory() as session:
         users = SqlUserRepository(session)
         if await users.find_by_email(DEMO_EMAIL) is not None:
-            print(f"Seed ignorado: {DEMO_EMAIL} ja existe.")
+            print(f"Seed ignorado: {DEMO_EMAIL} já existe.")
             await engine.dispose()
             return
 
@@ -156,7 +156,7 @@ async def seed() -> None:
 
         sprint1_items = [
             ("Login com email", WorkItemType.STORY, 5),
-            ("Dashboard de metricas", WorkItemType.STORY, 8),
+            ("Dashboard de métricas", WorkItemType.STORY, 8),
             ("API de sprints", WorkItemType.TASK, 3),
             ("Design system ink", WorkItemType.TASK, 5),
             ("Corrigir crash no login", WorkItemType.BUG, 2),
@@ -175,7 +175,7 @@ async def seed() -> None:
         sprint1 = await CreateSprint(projects, boards, sprints, clock).execute(
             workspace_id=workspace_id,
             project_id=project_view.id,
-            name="Sprint 1 — Fundacao",
+            name="Sprint 1 — Fundação",
             goal="Entregar login e dashboard com dados reais",
             start_date=today - timedelta(days=21),
             end_date=today - timedelta(days=8),
@@ -229,7 +229,7 @@ async def seed() -> None:
             move_item,
             board,
             workspace_id=workspace_id,
-            item_id=sprint1_ids["Dashboard de metricas"],
+            item_id=sprint1_ids["Dashboard de métricas"],
             category="IN_PROGRESS",
             clock=clock,
         )
@@ -246,7 +246,7 @@ async def seed() -> None:
             move_item,
             board,
             workspace_id=workspace_id,
-            item_id=sprint1_ids["Dashboard de metricas"],
+            item_id=sprint1_ids["Dashboard de métricas"],
             category="DONE",
             clock=clock,
         )
@@ -264,8 +264,8 @@ async def seed() -> None:
         sprint2 = await CreateSprint(projects, boards, sprints, clock).execute(
             workspace_id=workspace_id,
             project_id=project_view.id,
-            name="Sprint 2 — Retencao",
-            goal="Ativar tema escuro e notificacoes com qualidade",
+            name="Sprint 2 — Retenção",
+            goal="Ativar tema escuro e notificações com qualidade",
             start_date=today - timedelta(days=7),
             end_date=today + timedelta(days=6),
         )
@@ -357,8 +357,8 @@ async def seed() -> None:
         await session.commit()
 
     await engine.dispose()
-    print("Seed concluido.")
-    print(f"  usuario: {DEMO_EMAIL}")
+    print("Seed concluído.")
+    print(f"  usuário: {DEMO_EMAIL}")
     print(f"  senha:   {DEMO_PASSWORD}")
     print("  workspace: Acme Studio (slug acme-studio)")
 

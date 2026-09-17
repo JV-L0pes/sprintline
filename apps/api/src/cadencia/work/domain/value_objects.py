@@ -67,7 +67,7 @@ def normalize_project_key(raw: str) -> str:
     key = raw.strip().upper()
     if not PROJECT_KEY_RE.match(key):
         raise ValidationError(
-            "Chave do projeto deve ter 2 a 10 caracteres: letra seguida de letras/numeros",
+            "Chave do projeto deve ter 2 a 10 caracteres: letra seguida de letras/números",
             code="INVALID_PROJECT_KEY",
         )
     return key
@@ -78,7 +78,7 @@ def validate_story_points(value: int | None) -> int | None:
         return None
     if value not in FIBONACCI_POINTS:
         raise ValidationError(
-            "Story points devem seguir a sequencia de Fibonacci 1,2,3,5,8,13",
+            "Story points devem seguir a sequência de Fibonacci 1,2,3,5,8,13",
             code="INVALID_STORY_POINTS",
         )
     return value
@@ -87,5 +87,5 @@ def validate_story_points(value: int | None) -> int | None:
 def validate_title(value: str) -> str:
     title = value.strip()
     if not title or len(title) > 200:
-        raise ValidationError("Titulo deve ter de 1 a 200 caracteres", code="INVALID_TITLE")
+        raise ValidationError("Título deve ter de 1 a 200 caracteres", code="INVALID_TITLE")
     return title

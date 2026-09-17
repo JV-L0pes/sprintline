@@ -1,4 +1,4 @@
-"""Engine/sessao SQLAlchemy async. Postgres em producao, SQLite em dev/testes."""
+"""Engine/sessão SQLAlchemy async. Postgres em produção, SQLite em dev/testes."""
 
 from __future__ import annotations
 
@@ -44,8 +44,8 @@ class TimestampMixin:
 def normalize_database_url(url: str) -> str:
     """Traduz parametros libpq para o que o asyncpg entende.
 
-    URLs do Neon vem com `?sslmode=require` (padrao libpq); o dialeto asyncpg
-    espera `ssl=require`. `channel_binding` tambem e ignorado.
+    URLs do Neon vem com `?sslmode=require` (padrão libpq); o dialeto asyncpg
+    espera `ssl=require`. `channel_binding` também e ignorado.
     """
     if not url.startswith("postgresql+asyncpg"):
         return url

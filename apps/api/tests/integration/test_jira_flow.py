@@ -202,9 +202,9 @@ async def test_import_is_chunked_and_idempotent(
     by_title = {item["title"]: item for item in items}
     assert by_title["Login com SSO"]["story_points"] == 5
     assert by_title["Login com SSO"]["status_category"] == "DONE"
-    assert by_title["Dashboard"]["story_points"] == 3  # 4.0 arredonda para o Fibonacci mais proximo
+    assert by_title["Dashboard"]["story_points"] == 3  # 4.0 arredonda para o Fibonacci mais próximo
 
-    # Reexecucao de job concluido e bloqueada e nao duplica nada (RN-20)
+    # Reexecução de job concluído e bloqueada e não duplica nada (RN-20)
     second = await client.post(
         f"/api/v1/workspaces/{workspace_id}/integrations/{connection_id}/jobs/{job_id}/run",
         headers=headers,

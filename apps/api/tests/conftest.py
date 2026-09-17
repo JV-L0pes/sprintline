@@ -1,4 +1,4 @@
-"""Fixtures compartilhadas: app com SQLite em memoria e client ASGI."""
+"""Fixtures compartilhadas: app com SQLite em memória e client ASGI."""
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ app = create_app()
 
 @pytest.fixture
 def api_app() -> Any:
-    """A MESMA instancia usada pelo client (evita import de tests.conftest duplicar o app)."""
+    """A MESMA instância usada pelo client (evita import de tests.conftest duplicar o app)."""
     return app
 
 

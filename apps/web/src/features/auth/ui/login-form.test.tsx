@@ -35,10 +35,10 @@ describe("LoginForm", () => {
     localStorage.setItem("cadencia-lang", "pt-BR");
   });
 
-  it("mostra erro traduzido quando as credenciais sao invalidas", async () => {
+  it("mostra erro traduzido quando as credenciais são inválidas", async () => {
     server.use(
       http.post("*/api/v1/auth/login", () =>
-        problemResponse(401, "INVALID_CREDENTIALS", "Credenciais invalidas"),
+        problemResponse(401, "INVALID_CREDENTIALS", "Credenciais inválidas"),
       ),
     );
     const user = userEvent.setup();

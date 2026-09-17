@@ -49,7 +49,7 @@ def make_item(
     return WorkItem.create(
         project=project,
         item_type=item_type,
-        title="Titulo",
+        title="Título",
         todo_column_id=board.first_todo_column().id,
         position=1.0,
         parent_id=parent_id,
@@ -199,7 +199,7 @@ def test_work_item_lifecycle_sets_timestamps_and_events() -> None:
 
     item.move_to(column=board.first_todo_column(), now=NOW)
     assert item.done_at is None
-    assert item.first_in_progress_at == NOW  # nunca e limpo (cycle time historico)
+    assert item.first_in_progress_at == NOW  # nunca e limpo (cycle time histórico)
     types = [event.event_type for event in item.pull_events()]
     assert types == ["work_item.reopened", "work_item.moved"]
 

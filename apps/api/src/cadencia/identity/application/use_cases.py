@@ -85,7 +85,7 @@ class RegisterUser:
                 code="WEAK_PASSWORD",
             )
         if await self._users.find_by_email(email.strip().lower()) is not None:
-            raise ConflictError("Email ja cadastrado", code="EMAIL_ALREADY_REGISTERED")
+            raise ConflictError("Email já cadastrado", code="EMAIL_ALREADY_REGISTERED")
         user = User.register(
             email=email,
             name=name,
@@ -105,7 +105,7 @@ class AuthenticateUser:
     async def execute(self, *, email: str, password: str) -> User:
         user = await self._users.find_by_email(email.strip().lower())
         if user is None or not self._hasher.verify(user.password_hash, password):
-            raise UnauthorizedError("Credenciais invalidas", code="INVALID_CREDENTIALS")
+            raise UnauthorizedError("Credenciais inválidas", code="INVALID_CREDENTIALS")
         return user
 
 
@@ -157,11 +157,11 @@ class RotateSession:
         token_hash = self._tokens.hash_opaque_token(raw_refresh)
         session = await self._sessions.find_by_token_hash(token_hash)
         if session is None:
-            raise UnauthorizedError("Sessao invalida", code="SESSION_NOT_FOUND")
+            raise UnauthorizedError("Sessão inválida", code="SESSION_NOT_FOUND")
         if session.is_revoked:
             await self._sessions.revoke_family(session.family_id, now)
             raise UnauthorizedError(
-                "Reuso de token detectado; sessao revogada", code="SESSION_REUSE_DETECTED"
+                "Reuso de token detectado; sessão revogada", code="SESSION_REUSE_DETECTED"
             )
         session.ensure_active(now)
         session.revoke(now)
@@ -169,7 +169,7 @@ class RotateSession:
 
         user = await self._users.get(session.user_id)
         if user is None:
-            raise UnauthorizedError("Usuario nao encontrado", code="SESSION_USER_MISSING")
+            raise UnauthorizedError("Usuário não encontrado", code="SESSION_USER_MISSING")
 
         access_token, access_expires_at = self._tokens.create_access(user.id, now)
         raw_new = self._tokens.generate_opaque_token()
@@ -228,7 +228,7 @@ class CreateWorkspace:
             organization_id=organization.id, name=name, timezone=timezone, now=now
         )
         if await self._workspaces.find_by_slug(workspace.slug) is not None:
-            raise ConflictError("Ja existe um workspace com este nome", code="WORKSPACE_EXISTS")
+            raise ConflictError("Já existe um workspace com este nome", code="WORKSPACE_EXISTS")
         await self._workspaces.add(workspace)
         membership = Membership.join(
             workspace_id=workspace.id, user_id=user.id, role=Role.OWNER, now=now
@@ -280,13 +280,13 @@ class InviteMember:
     ) -> InviteView:
         if not role_at_least(actor_role, role):
             raise ForbiddenError(
-                "Nao e possivel convidar com papel superior ao seu", code="ROLE_ESCALATION"
+                "Não e possível convidar com papel superior ao seu", code="ROLE_ESCALATION"
             )
         existing_user = await self._users.find_by_email(email.strip().lower())
         if existing_user is not None:
             membership = await self._memberships.get(workspace_id, existing_user.id)
             if membership is not None:
-                raise ConflictError("Usuario ja e membro do workspace", code="ALREADY_MEMBER")
+                raise ConflictError("Usuário já é membro do workspace", code="ALREADY_MEMBER")
         now = self._clock.now()
         raw_token = self._tokens.generate_opaque_token()
         invite = Invite.issue(
@@ -315,13 +315,13 @@ class AcceptInvite:
         now = self._clock.now()
         invite = await self._invites.find_by_token_hash(self._tokens.hash_opaque_token(token))
         if invite is None:
-            raise NotFoundError("Convite nao encontrado", code="INVITE_NOT_FOUND")
+            raise NotFoundError("Convite não encontrado", code="INVITE_NOT_FOUND")
         existing = await self._memberships.get(invite.workspace_id, user.id)
         workspace = await self._workspaces.get(invite.workspace_id)
         if workspace is None:
-            raise NotFoundError("Workspace nao encontrado", code="WORKSPACE_NOT_FOUND")
+            raise NotFoundError("Workspace não encontrado", code="WORKSPACE_NOT_FOUND")
         if existing is not None:
-            # Idempotente: ja e membro (ex.: refresh da pagina de convite).
+            # Idempotente: já é membro (ex.: refresh da pagina de convite).
             return workspace_view(workspace, existing.role)
         invite.accept(user_email=user.email, now=now)
         membership = Membership.join(
@@ -338,14 +338,14 @@ def _ensure_can_manage(*, actor_role: Role, target_role: Role) -> None:
 
     if ROLE_RANK[target_role] >= ROLE_RANK[actor_role]:
         raise ForbiddenError(
-            "Seu papel nao permite gerenciar este membro", code="CANNOT_MANAGE_MEMBER"
+            "Seu papel não permite gerenciar este membro", code="CANNOT_MANAGE_MEMBER"
         )
 
 
 def _ensure_role_allowed(*, actor_role: Role, new_role: Role) -> None:
     if not role_at_least(actor_role, new_role):
         raise ForbiddenError(
-            "Nao e possivel atribuir papel superior ao seu", code="ROLE_ESCALATION"
+            "Não e possível atribuir papel superior ao seu", code="ROLE_ESCALATION"
         )
 
 
@@ -370,11 +370,11 @@ class ChangeMemberRole:
     ) -> MemberView:
         if target_user_id == actor_id:
             raise ConflictError(
-                "Voce nao pode alterar seu proprio papel", code="CANNOT_MANAGE_SELF"
+                "Você não pode alterar seu próprio papel", code="CANNOT_MANAGE_SELF"
             )
         target = await self._memberships.get(workspace_id, target_user_id)
         if target is None:
-            raise NotFoundError("Membro nao encontrado", code="MEMBER_NOT_FOUND")
+            raise NotFoundError("Membro não encontrado", code="MEMBER_NOT_FOUND")
         _ensure_can_manage(actor_role=actor_role, target_role=target.role)
         _ensure_role_allowed(actor_role=actor_role, new_role=new_role)
         if (
@@ -387,7 +387,7 @@ class ChangeMemberRole:
         await self._memberships.save(target)
         user = await self._users.get(target_user_id)
         if user is None:
-            raise NotFoundError("Usuario nao encontrado", code="USER_NOT_FOUND")
+            raise NotFoundError("Usuário não encontrado", code="USER_NOT_FOUND")
         return member_view(MembershipWithUser(membership=target, user=user))
 
 
@@ -404,10 +404,10 @@ class RemoveMember:
         target_user_id: uuid.UUID,
     ) -> None:
         if target_user_id == actor_id:
-            raise ConflictError("Voce nao pode remover a si mesmo", code="CANNOT_MANAGE_SELF")
+            raise ConflictError("Você não pode remover a si mesmo", code="CANNOT_MANAGE_SELF")
         target = await self._memberships.get(workspace_id, target_user_id)
         if target is None:
-            raise NotFoundError("Membro nao encontrado", code="MEMBER_NOT_FOUND")
+            raise NotFoundError("Membro não encontrado", code="MEMBER_NOT_FOUND")
         _ensure_can_manage(actor_role=actor_role, target_role=target.role)
         if target.role is Role.OWNER and await _owners_count(self._memberships, workspace_id) <= 1:
             raise ConflictError("O workspace precisa de pelo menos um owner", code="LAST_OWNER")
@@ -444,11 +444,11 @@ class ResetMemberPassword:
             )
         target = await self._memberships.get(workspace_id, target_user_id)
         if target is None:
-            raise NotFoundError("Membro nao encontrado", code="MEMBER_NOT_FOUND")
+            raise NotFoundError("Membro não encontrado", code="MEMBER_NOT_FOUND")
         _ensure_can_manage(actor_role=actor_role, target_role=target.role)
         user = await self._users.get(target_user_id)
         if user is None:
-            raise NotFoundError("Usuario nao encontrado", code="USER_NOT_FOUND")
+            raise NotFoundError("Usuário não encontrado", code="USER_NOT_FOUND")
         user.set_password_hash(self._hasher.hash(new_password))
         await self._users.save(user)
         await self._sessions.revoke_all_for_user(user.id, self._clock.now())
@@ -477,5 +477,5 @@ class ChangeOwnPassword:
             )
         user.set_password_hash(self._hasher.hash(new_password))
         await self._users.save(user)
-        # Toda a familia de sessoes e revogada: re-login em todos os dispositivos.
+        # Toda a família de sessões e revogada: re-login em todos os dispositivos.
         await self._sessions.revoke_all_for_user(user.id, self._clock.now())

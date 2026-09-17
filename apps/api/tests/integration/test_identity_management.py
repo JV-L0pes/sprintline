@@ -1,4 +1,4 @@
-"""Gestao de identidade: rate limit, registro por convite, membros e senhas."""
+"""Gestão de identidade: rate limit, registro por convite, membros e senhas."""
 
 from __future__ import annotations
 
@@ -115,7 +115,7 @@ async def test_member_role_change_rules(client: httpx.AsyncClient) -> None:
     assert promoted.status_code == 200
     assert promoted.json()["role"] == "ADMIN"
 
-    # Admin nao gerencia owner nem promove a owner (escalation)
+    # Admin não gerencia owner nem promove a owner (escalation)
     as_admin = await register_and_login(client, email="admin2@example.com")
     invite = (
         await client.post(
@@ -133,7 +133,7 @@ async def test_member_role_change_rules(client: httpx.AsyncClient) -> None:
     assert cannot_manage_owner.status_code == 403
     assert cannot_manage_owner.json()["code"] == "CANNOT_MANAGE_MEMBER"
 
-    # Owner nao altera o proprio papel (evita lockout)
+    # Owner não altera o próprio papel (evita lockout)
     self_change = await client.patch(
         f"/api/v1/workspaces/{workspace_id}/members/{owner_id}",
         json={"role": "MEMBER"},
@@ -190,7 +190,7 @@ async def test_admin_resets_member_password(client: httpx.AsyncClient) -> None:
     )
     assert reset.status_code == 204
 
-    # Sessoes do membro revogadas (o cookie atual do client pertence a ele)
+    # Sessões do membro revogadas (o cookie atual do client pertence a ele)
     after_reset = await client.post("/api/v1/auth/refresh")
     assert after_reset.status_code == 401
     old_login = await client.post(

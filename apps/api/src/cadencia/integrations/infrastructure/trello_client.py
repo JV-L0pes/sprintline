@@ -1,4 +1,4 @@
-"""Cliente HTTP do Trello (API key do app + token do usuario)."""
+"""Cliente HTTP do Trello (API key do app + token do usuário)."""
 
 from __future__ import annotations
 

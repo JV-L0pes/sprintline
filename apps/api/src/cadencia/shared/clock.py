@@ -1,4 +1,4 @@
-"""Relogio injetavel — dominio e casos de uso nunca chamam datetime.now() diretamente."""
+"""Relogio injetável — dominio e casos de uso nunca chamam datetime.now() diretamente."""
 
 from __future__ import annotations
 
@@ -11,14 +11,14 @@ class Clock(Protocol):
 
 
 class SystemClock:
-    """Relogio de producao: sempre UTC aware."""
+    """Relogio de produção: sempre UTC aware."""
 
     def now(self) -> datetime:
         return datetime.now(UTC)
 
 
 class FrozenClock:
-    """Relogio deterministico para testes e seeds; avancavel manualmente."""
+    """Relogio deterministico para testes e seeds; avançável manualmente."""
 
     def __init__(self, current: datetime) -> None:
         if current.tzinfo is None:

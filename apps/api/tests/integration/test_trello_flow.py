@@ -66,7 +66,7 @@ class FakeTrelloGateway:
 
     async def member_me(self, token: str) -> TrelloMember:
         if not token.startswith("trello-"):
-            raise ValueError("token invalido")
+            raise ValueError("token inválido")
         return TrelloMember(id="m1", username="dev", full_name="Dev Runner")
 
     async def member_boards(self, token: str) -> list[TrelloBoard]:
@@ -188,11 +188,11 @@ async def test_import_maps_lists_labels_and_points(
     assert crash["status_category"] == "IN_PROGRESS"  # lista "Doing"
     assert "trello.com/c/c2" in crash["description"]
 
-    # Webhook do board registrado ao concluir a importacao (best-effort)
+    # Webhook do board registrado ao concluir a importação (best-effort)
     assert len(trello_gateway.webhooks) == 1
     assert trello_gateway.webhooks[0][0] == "b1"
 
-    # Reexecucao bloqueada e sem duplicacao (RN-20)
+    # Reexecução bloqueada e sem duplicação (RN-20)
     again = await client.post(
         f"/api/v1/workspaces/{workspace_id}/integrations/{connection_id}/jobs/{job_id}/run",
         headers=headers,
@@ -271,7 +271,7 @@ async def test_webhook_dedupes_and_moves_card(
     assert crash["status_category"] == "DONE"
     assert crash["done_at"] is not None
 
-    # Token errado na URL publica -> 404
+    # Token errado na URL pública -> 404
     bad = await client.post(
         f"/api/v1/integrations/trello/webhook/{connection_id}?token=errado", json=payload
     )

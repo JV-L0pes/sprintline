@@ -39,7 +39,7 @@ from cadencia.work.domain.value_objects import (
 def _category_of(board: Board, column_id: uuid.UUID) -> StatusCategory:
     column = board.column(column_id)
     if column is None:
-        raise NotFoundError("Coluna nao encontrada no board", code="COLUMN_NOT_FOUND")
+        raise NotFoundError("Coluna não encontrada no board", code="COLUMN_NOT_FOUND")
     return column.category
 
 
@@ -106,10 +106,10 @@ async def _load_context(
 ) -> tuple[Project, Board]:
     project = await projects.get(project_id, workspace_id)
     if project is None:
-        raise NotFoundError("Projeto nao encontrado", code="PROJECT_NOT_FOUND")
+        raise NotFoundError("Projeto não encontrado", code="PROJECT_NOT_FOUND")
     board = await boards.get_by_project(project.id)
     if board is None:
-        raise NotFoundError("Board nao encontrado", code="BOARD_NOT_FOUND")
+        raise NotFoundError("Board não encontrado", code="BOARD_NOT_FOUND")
     return project, board
 
 
@@ -138,7 +138,7 @@ class CreateProject:
         normalized_key = normalize_project_key(key)
         if await self._projects.key_exists(workspace_id, normalized_key):
             raise ConflictError(
-                f"Ja existe projeto com a chave {normalized_key}", code="PROJECT_KEY_EXISTS"
+                f"Já existe projeto com a chave {normalized_key}", code="PROJECT_KEY_EXISTS"
             )
         project = Project.create(
             workspace_id=workspace_id,
@@ -204,7 +204,7 @@ class GetBoard:
 
 
 class _BoardColumnsUseCase:
-    """Base para operacoes de coluna: carrega contexto e devolve o board."""
+    """Base para operações de coluna: carrega contexto e devolve o board."""
 
     def __init__(
         self,
@@ -290,7 +290,7 @@ class DeleteBoardColumn(_BoardColumnsUseCase):
             project_id=project_id,
         )
         if board.column(column_id) is None:
-            raise NotFoundError("Coluna nao encontrada", code="COLUMN_NOT_FOUND")
+            raise NotFoundError("Coluna não encontrada", code="COLUMN_NOT_FOUND")
         if await self._items.count_in_column(column_id) > 0:
             raise ConflictError(
                 "Mova os itens desta coluna antes de remove-la", code="COLUMN_NOT_EMPTY"
@@ -382,7 +382,7 @@ class CreateWorkItem:
         if parent_id is not None:
             parent = await self._items.get(parent_id)
             if parent is None or parent.project_id != project.id or parent.archived_at is not None:
-                raise NotFoundError("Item pai nao encontrado", code="PARENT_NOT_FOUND")
+                raise NotFoundError("Item pai não encontrado", code="PARENT_NOT_FOUND")
             parent_type = parent.type
 
         number = project.allocate_item_number()
@@ -439,7 +439,7 @@ class UpdateWorkItem:
     ) -> WorkItemView:
         item = await self._items.get(item_id)
         if item is None:
-            raise NotFoundError("Item nao encontrado", code="ITEM_NOT_FOUND")
+            raise NotFoundError("Item não encontrado", code="ITEM_NOT_FOUND")
         project, board = await _load_context(
             projects=self._projects,
             boards=self._boards,
@@ -493,7 +493,7 @@ class MoveWorkItem:
     ) -> MoveResult:
         item = await self._items.get(item_id)
         if item is None:
-            raise NotFoundError("Item nao encontrado", code="ITEM_NOT_FOUND")
+            raise NotFoundError("Item não encontrado", code="ITEM_NOT_FOUND")
         project, board = await _load_context(
             projects=self._projects,
             boards=self._boards,
@@ -504,7 +504,7 @@ class MoveWorkItem:
             raise ConflictError("Item desatualizado", code="STALE_VERSION")
         target_column = board.column(target_column_id)
         if target_column is None:
-            raise NotFoundError("Coluna destino nao encontrada", code="COLUMN_NOT_FOUND")
+            raise NotFoundError("Coluna destino não encontrada", code="COLUMN_NOT_FOUND")
 
         current = await self._items.list_in_column(target_column.id)
         same_column = item.status_column_id == target_column.id
@@ -557,7 +557,7 @@ class AssignWorkItemToSprint:
     ) -> WorkItemView:
         item = await self._items.get(item_id)
         if item is None:
-            raise NotFoundError("Item nao encontrado", code="ITEM_NOT_FOUND")
+            raise NotFoundError("Item não encontrado", code="ITEM_NOT_FOUND")
         _, board = await _load_context(
             projects=self._projects,
             boards=self._boards,
@@ -568,9 +568,9 @@ class AssignWorkItemToSprint:
         if sprint_id is not None:
             sprint = await self._sprints.get(sprint_id)
             if sprint is None or sprint.board_id != board.id:
-                raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+                raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
             if sprint.state is SprintState.COMPLETED:
-                raise ConflictError("Sprint concluida nao aceita itens", code="SPRINT_COMPLETED")
+                raise ConflictError("Sprint concluída não aceita itens", code="SPRINT_COMPLETED")
         await self._assignments.close_open_for_item(item.id, now)
         if sprint_id is not None:
             await self._assignments.add(
@@ -647,16 +647,16 @@ class StartSprint:
     async def execute(self, *, workspace_id: uuid.UUID, sprint_id: uuid.UUID) -> SprintView:
         sprint = await self._sprints.get(sprint_id)
         if sprint is None:
-            raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+            raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
         board = await self._boards.get(sprint.board_id)
         if board is None:
-            raise NotFoundError("Board nao encontrado", code="BOARD_NOT_FOUND")
+            raise NotFoundError("Board não encontrado", code="BOARD_NOT_FOUND")
         if await self._projects.get(board.project_id, workspace_id) is None:
-            raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+            raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
         active = await self._sprints.active_for_board(board.id)
         if active is not None and active.id != sprint.id:
             raise ConflictError(
-                f"Ja existe sprint ativa neste board: {active.name}",
+                f"Já existe sprint ativa neste board: {active.name}",
                 code="SPRINT_ALREADY_ACTIVE",
             )
         assigned = await self._sprints.count_assigned(sprint.id)
@@ -692,12 +692,12 @@ class CompleteSprint:
     ) -> SprintView:
         sprint = await self._sprints.get(sprint_id)
         if sprint is None:
-            raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+            raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
         board = await self._boards.get(sprint.board_id)
         if board is None:
-            raise NotFoundError("Board nao encontrado", code="BOARD_NOT_FOUND")
+            raise NotFoundError("Board não encontrado", code="BOARD_NOT_FOUND")
         if await self._projects.get(board.project_id, workspace_id) is None:
-            raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+            raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
 
         now = self._clock.now()
         items = await self._items.list_for_sprint(sprint.id)
@@ -705,9 +705,9 @@ class CompleteSprint:
         if target_sprint_id is not None and open_items:
             target = await self._sprints.get(target_sprint_id)
             if target is None or target.board_id != sprint.board_id or target.id == sprint.id:
-                raise NotFoundError("Sprint destino nao encontrada", code="SPRINT_NOT_FOUND")
+                raise NotFoundError("Sprint destino não encontrada", code="SPRINT_NOT_FOUND")
             if target.state is SprintState.COMPLETED:
-                raise ConflictError("Sprint destino ja concluida", code="SPRINT_COMPLETED")
+                raise ConflictError("Sprint destino já concluída", code="SPRINT_COMPLETED")
         for item in open_items:
             await self._assignments.close_open_for_item(item.id, now)
             if target_sprint_id is not None:
@@ -745,10 +745,10 @@ class GetSprint:
     async def execute(self, *, workspace_id: uuid.UUID, sprint_id: uuid.UUID) -> SprintView:
         sprint = await self._sprints.get(sprint_id)
         if sprint is None:
-            raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+            raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
         board = await self._boards.get(sprint.board_id)
         if board is None or await self._projects.get(board.project_id, workspace_id) is None:
-            raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+            raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
         items = await self._items.list_for_sprint(sprint.id)
         return sprint_view(sprint, items)
 
@@ -767,7 +767,7 @@ class ListSprints:
     async def execute(self, *, workspace_id: uuid.UUID, project_id: uuid.UUID) -> list[SprintView]:
         project = await self._projects.get(project_id, workspace_id)
         if project is None:
-            raise NotFoundError("Projeto nao encontrado", code="PROJECT_NOT_FOUND")
+            raise NotFoundError("Projeto não encontrado", code="PROJECT_NOT_FOUND")
         sprints = await self._sprints.list_for_project(project.id)
         views: list[SprintView] = []
         for sprint in sprints:

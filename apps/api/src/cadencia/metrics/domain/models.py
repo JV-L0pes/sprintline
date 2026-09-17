@@ -1,4 +1,4 @@
-"""Read models de metricas (RM-01..RM-15)."""
+"""Read models de métricas (RM-01..RM-15)."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ class AssignmentWindow:
 
 @dataclass(frozen=True)
 class ItemFlow:
-    """Item com sua historia completa de escopo e status (event sourcing, RN-23)."""
+    """Item com sua história completa de escopo e status (event sourcing, RN-23)."""
 
     id: uuid.UUID
     key: str

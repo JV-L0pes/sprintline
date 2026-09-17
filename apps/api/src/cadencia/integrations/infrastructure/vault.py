@@ -19,6 +19,6 @@ class TokenVault:
             return self._fernet.decrypt(token.encode()).decode()
         except InvalidToken as exc:
             raise ValidationError(
-                "Falha ao decifrar token da integracao; verifique INTEGRATION_SECRET_KEY",
+                "Falha ao decifrar token da integração; verifique INTEGRATION_SECRET_KEY",
                 code="TOKEN_DECRYPT_FAILED",
             ) from exc

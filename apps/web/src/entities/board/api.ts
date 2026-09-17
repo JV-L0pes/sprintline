@@ -108,8 +108,8 @@ export function useReorderColumns(workspaceId: string, projectId: string) {
 }
 
 /**
- * Move um item entre colunas/posicoes preservando a ordenacao — usado tanto
- * pelo drag-and-drop quanto pelas atualizacoes otimistas.
+ * Move um item entre colunas/posições preservando a ordenação — usado tanto
+ * pelo drag-and-drop quanto pelas atualizações otimistas.
  */
 export function applyMove(
   items: WorkItem[],

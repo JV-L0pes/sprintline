@@ -1,4 +1,4 @@
-"""Porta de leitura de metricas — implementada na infraestrutura sobre o event log."""
+"""Porta de leitura de métricas — implementada na infraestrutura sobre o event log."""
 
 from __future__ import annotations
 

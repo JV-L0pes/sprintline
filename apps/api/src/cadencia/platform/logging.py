@@ -1,4 +1,4 @@
-"""Logging estruturado (JSON em producao, texto em dev)."""
+"""Logging estruturado (JSON em produção, texto em dev)."""
 
 from __future__ import annotations
 

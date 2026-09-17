@@ -1,4 +1,4 @@
-"""Rotas HTTP de metricas."""
+"""Rotas HTTP de métricas."""
 
 from __future__ import annotations
 

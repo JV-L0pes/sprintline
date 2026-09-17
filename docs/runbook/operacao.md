@@ -28,7 +28,7 @@ Gerar segredos: `python -c "import secrets; print(secrets.token_urlsafe(48))"` e
 
 - `CADENCIA_REGISTRATION_MODE`: `invite_only` (padrão) bloqueia cadastro aberto; `open` libera; `closed` desliga o endpoint.
 - **Bootstrap do primeiro owner** (obrigatório em instância fechada):
-  `uv run python scripts/create_admin.py --email voce@exemplo.com --name "Seu Nome"` (gera senha temporária; troque no primeiro acesso).
+  `uv run python scripts/create_admin.py --email você@exemplo.com --name "Seu Nome"` (gera senha temporária; troque no primeiro acesso).
 - Convites: um admin gera o link em Configurações → Membros → Convidar; a pessoa abre o link, cria a conta e entra.
 - Rate limit do auth: login 10 tentativas/15min, registro 5/h, refresh 120/h (configurável por env); resposta 429 com `Retry-After`.
 - **Remover dados de demonstração** de um banco: `uv run python scripts/purge_demo.py --yes` (o seed local recusa rodar em produção sem `--force`).

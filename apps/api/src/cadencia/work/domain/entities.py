@@ -56,7 +56,7 @@ class Project(AggregateRoot):
     ) -> None:
         super().__init__(entity_id)
         if not name.strip():
-            raise ValidationError("Nome do projeto e obrigatorio", code="INVALID_NAME")
+            raise ValidationError("Nome do projeto e obrigatório", code="INVALID_NAME")
         self.workspace_id = workspace_id
         self.name = name.strip()[:120]
         self.key = key
@@ -168,7 +168,7 @@ class Board(AggregateRoot):
         position: int | None = None,
     ) -> BoardColumn:
         if not name.strip():
-            raise ValidationError("Nome da coluna e obrigatorio", code="INVALID_COLUMN_NAME")
+            raise ValidationError("Nome da coluna e obrigatório", code="INVALID_COLUMN_NAME")
         if wip_limit is not None and wip_limit < 1:
             raise ValidationError("WIP limit deve ser >= 1", code="INVALID_WIP_LIMIT")
         column = BoardColumn(
@@ -192,10 +192,10 @@ class Board(AggregateRoot):
     ) -> BoardColumn:
         column = self.column(column_id)
         if column is None:
-            raise ValidationError("Coluna nao encontrada", code="COLUMN_NOT_FOUND")
+            raise ValidationError("Coluna não encontrada", code="COLUMN_NOT_FOUND")
         if name is not None:
             if not name.strip():
-                raise ValidationError("Nome da coluna e obrigatorio", code="INVALID_COLUMN_NAME")
+                raise ValidationError("Nome da coluna e obrigatório", code="INVALID_COLUMN_NAME")
             column.name = name.strip()[:60]
         if clear_wip:
             column.wip_limit = None
@@ -208,11 +208,11 @@ class Board(AggregateRoot):
     def remove_column(self, column_id: uuid.UUID) -> None:
         column = self.column(column_id)
         if column is None:
-            raise ValidationError("Coluna nao encontrada", code="COLUMN_NOT_FOUND")
+            raise ValidationError("Coluna não encontrada", code="COLUMN_NOT_FOUND")
         remaining = [candidate for candidate in self.columns if candidate.id != column_id]
         if not any(candidate.category is column.category for candidate in remaining):
             raise ValidationError(
-                "Nao e possivel remover a ultima coluna desta categoria",
+                "Não e possível remover a última coluna desta categoria",
                 code="BOARD_LAST_CATEGORY_COLUMN",
             )
         self.columns = remaining
@@ -221,7 +221,7 @@ class Board(AggregateRoot):
     def reorder_columns(self, column_ids: list[uuid.UUID]) -> None:
         if {column.id for column in self.columns} != set(column_ids):
             raise ValidationError(
-                "A ordenacao deve conter exatamente as colunas do board",
+                "A ordenação deve conter exatamente as colunas do board",
                 code="INVALID_COLUMN_ORDER",
             )
         by_id = {column.id: column for column in self.columns}
@@ -356,7 +356,7 @@ class WorkItem(AggregateRoot):
     ) -> WorkItem:
         if parent_id is not None:
             if parent_type is None:
-                raise ValidationError("Item pai nao encontrado", code="PARENT_NOT_FOUND")
+                raise ValidationError("Item pai não encontrado", code="PARENT_NOT_FOUND")
             ensure_hierarchy_child(item_type, parent_type)
         ensure_points_allowed(item_type, story_points)
         item = cls(
@@ -496,7 +496,7 @@ class WorkItem(AggregateRoot):
 
     def archive(self, *, now: datetime) -> None:
         if self.archived_at is not None:
-            raise ConflictError("Item ja arquivado", code="ITEM_ALREADY_ARCHIVED")
+            raise ConflictError("Item já arquivado", code="ITEM_ALREADY_ARCHIVED")
         self.archived_at = now
         self.updated_at = now
         self._record(WorkItemArchived())
@@ -591,7 +591,7 @@ class Sprint(AggregateRoot):
 
     def update_plan(self, *, name: str | None, goal: str | None) -> None:
         if self.state is SprintState.COMPLETED:
-            raise ConflictError("Sprint concluida e imutavel", code="SPRINT_COMPLETED")
+            raise ConflictError("Sprint concluída e imutável", code="SPRINT_COMPLETED")
         if name is not None:
             self.name = name.strip()[:120]
         if goal is not None:
@@ -600,7 +600,7 @@ class Sprint(AggregateRoot):
     def start(self, *, assigned_items: int) -> None:
         if self.state is not SprintState.PLANNED:
             raise ConflictError(
-                f"Sprint em estado {self.state.value} nao pode ser iniciada",
+                f"Sprint em estado {self.state.value} não pode ser iniciada",
                 code="SPRINT_NOT_PLANNED",
             )
         ensure_sprint_can_start(goal=self.goal, assigned_items=assigned_items)
@@ -615,7 +615,7 @@ class Sprint(AggregateRoot):
 
     def complete(self, *, now: datetime) -> None:
         if self.state is not SprintState.ACTIVE:
-            raise ConflictError("Apenas sprint ativa pode ser concluida", code="SPRINT_NOT_ACTIVE")
+            raise ConflictError("Apenas sprint ativa pode ser concluída", code="SPRINT_NOT_ACTIVE")
         self.state = SprintState.COMPLETED
         self.completed_at = now
         self._record(SprintCompleted())

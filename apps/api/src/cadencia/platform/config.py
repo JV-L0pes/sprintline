@@ -1,4 +1,4 @@
-"""Configuracao 12-factor: tudo por variavel de ambiente (prefixo CADENCIA_)."""
+"""Configuração 12-factor: tudo por variável de ambiente (prefixo CADENCIA_)."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
 
     app_name: str = "Sprintline"
-    # open | invite_only | closed — padrao seguro para uso privado
+    # open | invite_only | closed — padrão seguro para uso privado
     registration_mode: str = "invite_only"
     login_max_attempts: int = 10
     login_window_minutes: int = 15

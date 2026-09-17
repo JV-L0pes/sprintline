@@ -1,7 +1,7 @@
 [project]
 name = "cadencia-api"
 version = "0.1.0"
-description = "Cadencia API — kanban, sprints, metricas ageis e integracao Jira"
+description = "Cadencia API — kanban, sprints, métricas ágeis e integração Jira"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -132,7 +132,7 @@ exclude_lines = [
 root_packages = ["cadencia"]
 
 [[tool.importlinter.contracts]]
-name = "shared e platform nao dependem de contexts"
+name = "shared e platform não dependem de contexts"
 type = "forbidden"
 source_modules = ["cadencia.shared", "cadencia.platform"]
 forbidden_modules = [
@@ -143,7 +143,7 @@ forbidden_modules = [
 ]
 
 [[tool.importlinter.contracts]]
-name = "dominio de cada context nao importa infraestrutura, interface ou outros contexts"
+name = "dominio de cada context não importa infraestrutura, interface ou outros contexts"
 type = "forbidden"
 source_modules = [
   "cadencia.identity.domain",
@@ -168,7 +168,7 @@ forbidden_modules = [
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
-name = "apenas o deps de identity pode ser importado entre contexts (autenticacao e tenancy)"
+name = "apenas o deps de identity pode ser importado entre contexts (autenticação e tenancy)"
 type = "forbidden"
 source_modules = ["cadencia.work", "cadencia.integrations"]
 forbidden_modules = [
@@ -180,7 +180,7 @@ forbidden_modules = [
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
-name = "metrics domain/application nao dependem de outros contexts (leitura fica na infra)"
+name = "metrics domain/application não dependem de outros contexts (leitura fica na infra)"
 type = "forbidden"
 source_modules = ["cadencia.metrics.domain", "cadencia.metrics.application"]
 forbidden_modules = [

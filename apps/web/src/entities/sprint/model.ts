@@ -28,7 +28,7 @@ export function completedSprints(sprints: Sprint[]): Sprint[] {
     .reverse();
 }
 
-/** Sprint inicial da pagina de metricas: ativa > ultima concluida > planejada. */
+/** Sprint inicial da pagina de métricas: ativa > última concluída > planejada. */
 export function defaultSprint(sprints: Sprint[]): Sprint | undefined {
   return (
     activeSprint(sprints) ??

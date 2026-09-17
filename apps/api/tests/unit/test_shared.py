@@ -19,7 +19,7 @@ def test_normalize_database_url_converts_libpq_params() -> None:
     assert "sslmode" not in normalized
     assert "channel_binding" not in normalized
     assert "ssl=require" in normalized
-    # URLs que nao sao asyncpg (ex.: sqlite) passam intactas
+    # URLs que não são asyncpg (ex.: sqlite) passam intactas
     assert normalize_database_url("sqlite+aiosqlite:///./x.db") == "sqlite+aiosqlite:///./x.db"
 
 

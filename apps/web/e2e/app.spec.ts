@@ -11,7 +11,7 @@ test.describe("jornada principal", () => {
 
   test("registro → projeto → item → sprint → burndown", async ({ page }) => {
     const suffix = String(Date.now());
-    const itemTitle = `Primeira historia ${suffix}`;
+    const itemTitle = `Primeira história ${suffix}`;
 
     await page.goto("/login");
     await page.getByRole("link", { name: /criar conta/i }).click();
@@ -36,7 +36,7 @@ test.describe("jornada principal", () => {
       .getByRole("button", { name: /novo item/i })
       .first()
       .click();
-    await page.getByLabel(/titulo/i).fill(itemTitle);
+    await page.getByLabel(/título/i).fill(itemTitle);
     await page.getByRole("button", { name: /salvar/i }).click();
     await expect(page.getByText(itemTitle)).toBeVisible();
 
@@ -45,12 +45,12 @@ test.describe("jornada principal", () => {
     await page.getByLabel(/objetivo/i).fill("Validar o fluxo completo de ponta a ponta");
     await page.getByRole("button", { name: /^criar$/i }).click();
 
-    // Backlog: espera a pagina montar (o board tambem tem o item com o mesmo titulo)
+    // Backlog: espera a pagina montar (o board também tem o item com o mesmo título)
     await page.getByRole("link", { name: /backlog/i }).click();
     const backlogSection = sectionByHeading(page, "Product Backlog");
     await expect(backlogSection).toBeVisible();
 
-    // Planeja o item na sprint pelo dialogo (caminho acessivel e deterministico;
+    // Planeja o item na sprint pelo dialogo (caminho acessível e deterministico;
     // o arrasto fica num handle dedicado fora do alvo de clique)
     await backlogSection.getByRole("button", { name: new RegExp(itemTitle) }).click();
     await page
@@ -68,8 +68,8 @@ test.describe("jornada principal", () => {
     await expect(page.getByRole("heading", { name: "Sprint E2E" })).toBeVisible();
     await expect(page.getByText(/0\/0 pts/)).toBeVisible();
 
-    // Metricas reais a partir do event log
-    await page.getByRole("link", { name: /metricas/i }).click();
+    // Métricas reais a partir do event log
+    await page.getByRole("link", { name: /métricas/i }).click();
     await expect(page.getByRole("heading", { name: /burndown/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /velocity/i })).toBeVisible();
     await expect(page.getByText(/escopo/i).first()).toBeVisible();

@@ -19,7 +19,7 @@ describe("dicionarios i18n", () => {
     expect(enKeys).toEqual(ptKeys);
   });
 
-  it("nao tem chaves vazias", () => {
+  it("não tem chaves vazias", () => {
     const emptyPt = ptKeys.filter((key) => resolve(pt, key) === "");
     const emptyEn = enKeys.filter((key) => resolve(en, key) === "");
     expect(emptyPt).toEqual([]);

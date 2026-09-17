@@ -1,4 +1,4 @@
-"""Portas de persistencia do contexto identity."""
+"""Portas de persistência do contexto identity."""
 
 from __future__ import annotations
 

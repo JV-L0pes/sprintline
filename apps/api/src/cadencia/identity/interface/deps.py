@@ -1,4 +1,4 @@
-"""Dependencias de autenticacao e tenancy compartilhadas pelos routers."""
+"""Dependências de autenticação e tenancy compartilhadas pelos routers."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ async def get_current_user(
     user_id = decode_access_token(header[7:].strip(), request.app.state.settings)
     user = await SqlUserRepository(session).get(user_id)
     if user is None:
-        raise UnauthorizedError("Usuario nao encontrado", code="USER_NOT_FOUND")
+        raise UnauthorizedError("Usuário não encontrado", code="USER_NOT_FOUND")
     session.info["audit"] = AuditInfo(actor_id=user.id, source="local")
     return user
 
@@ -74,13 +74,13 @@ async def get_workspace_access(
     user: CurrentUser,
     session: SessionDep,
 ) -> WorkspaceAccess:
-    """RN-02: nao-membro recebe 404 (nao 403) para nao vazar existencia."""
+    """RN-02: nao-membro recebe 404 (não 403) para não vazar existência."""
     membership = await SqlMembershipRepository(session).get(workspace_id, user.id)
     if membership is None:
-        raise NotFoundError("Workspace nao encontrado", code="WORKSPACE_NOT_FOUND")
+        raise NotFoundError("Workspace não encontrado", code="WORKSPACE_NOT_FOUND")
     workspace = await SqlWorkspaceRepository(session).get(workspace_id)
     if workspace is None:
-        raise NotFoundError("Workspace nao encontrado", code="WORKSPACE_NOT_FOUND")
+        raise NotFoundError("Workspace não encontrado", code="WORKSPACE_NOT_FOUND")
     return WorkspaceAccess(user=user, workspace=workspace, membership=membership)
 
 
@@ -92,7 +92,7 @@ def require_role(
 ) -> Callable[..., Coroutine[Any, Any, WorkspaceAccess]]:
     async def _check(access: WorkspaceAccessDep) -> WorkspaceAccess:
         if not role_at_least(access.role, minimum):
-            raise ForbiddenError("Seu papel nao permite esta operacao", code="INSUFFICIENT_ROLE")
+            raise ForbiddenError("Seu papel não permite esta operação", code="INSUFFICIENT_ROLE")
         return access
 
     return _check

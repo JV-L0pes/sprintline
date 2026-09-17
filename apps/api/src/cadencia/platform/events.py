@@ -1,8 +1,8 @@
 """Append de eventos de dominio no event log (mesma transacao do agregado).
 
-O recorder vive em `session.info`, entao os repositorios persistem eventos sem
+O recorder vive em `session.info`, então os repositórios persistem eventos sem
 que casos de uso precisem de plumbing manual — a invariante "toda escrita de
-agregado gera evento" (RN-23) fica garantida em um unico lugar.
+agregado gera evento" (RN-23) fica garantida em um único lugar.
 """
 
 from __future__ import annotations

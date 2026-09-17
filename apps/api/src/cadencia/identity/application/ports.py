@@ -1,4 +1,4 @@
-"""Portas de servicos de seguranca — implementadas na infraestrutura."""
+"""Portas de servicos de segurança — implementadas na infraestrutura."""
 
 from __future__ import annotations
 

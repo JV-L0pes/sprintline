@@ -12,22 +12,22 @@ from cadencia.work.domain.value_objects import (
 
 
 def ensure_hierarchy_child(child_type: WorkItemType, parent_type: WorkItemType) -> None:
-    """RN-09: EPIC nao tem pai; SUBTASK exige pai valido; profundidade maxima 2."""
+    """RN-09: EPIC não tem pai; SUBTASK exige pai válido; profundidade máxima 2."""
     if child_type is WorkItemType.EPIC:
-        raise ValidationError("Epic nao pode ser filho de outro item", code="EPIC_WITH_PARENT")
+        raise ValidationError("Epic não pode ser filho de outro item", code="EPIC_WITH_PARENT")
     allowed = PARENT_ALLOWED.get(child_type, frozenset())
     if parent_type not in allowed:
         raise ValidationError(
-            f"{child_type.value} nao pode ser filho de {parent_type.value}",
+            f"{child_type.value} não pode ser filho de {parent_type.value}",
             code="INVALID_HIERARCHY",
         )
 
 
 def ensure_points_allowed(item_type: WorkItemType, points: int | None) -> None:
-    """RN-10: subtasks nao carregam pontos (contagem acontece no item pai)."""
+    """RN-10: subtasks não carregam pontos (contagem acontece no item pai)."""
     if points is not None and item_type is WorkItemType.SUBTASK:
         raise ValidationError(
-            "Subtasks nao possuem story points; a estimativa fica no item pai",
+            "Subtasks não possuem story points; a estimativa fica no item pai",
             code="SUBTASK_POINTS_NOT_ALLOWED",
         )
 
@@ -64,7 +64,7 @@ def ensure_priority(value: str) -> Priority:
     try:
         return Priority(value)
     except ValueError as exc:
-        raise ValidationError(f"Prioridade invalida: {value}", code="INVALID_PRIORITY") from exc
+        raise ValidationError(f"Prioridade inválida: {value}", code="INVALID_PRIORITY") from exc
 
 
 def next_category_is_done(category: StatusCategory) -> bool:

@@ -67,7 +67,7 @@ def register_error_handlers(app: FastAPI) -> None:
         return problem(
             status=422,
             code="REQUEST_VALIDATION_ERROR",
-            detail="Corpo ou parametros da requisicao invalidos",
+            detail="Corpo ou parametros da requisição inválidos",
             instance=str(request.url.path),
             extra={"fields": _sanitize(exc.errors())},
         )

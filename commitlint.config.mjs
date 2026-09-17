@@ -13,6 +13,7 @@ export default {
         "shared",
         "web",
         "api",
+        "i18n",
         "ci",
         "docs",
         "repo",

@@ -1,7 +1,7 @@
 """Schema inicial (metadata-driven).
 
-A primeira migracao cria o schema completo a partir do metadata declarativo —
-garantindo paridade total com os modelos. Migracao geradas a partir da 0002
+A primeira migração cria o schema completo a partir do metadata declarativo —
+garantindo paridade total com os modelos. Migração geradas a partir da 0002
 devem ser produzidas com `alembic revision --autogenerate` contra Postgres.
 
 Revision ID: 0001

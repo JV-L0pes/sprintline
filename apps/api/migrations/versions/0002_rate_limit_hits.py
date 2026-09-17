@@ -1,8 +1,8 @@
 """Tabela de rate limit do auth.
 
-A 0001 e metadata-driven (create_all do metadata atual), entao em um banco
-novo esta tabela Ja nasce por la; aqui garantimos a criacao em bancos que
-foram migrados antes desta revisao. Por isso o guard de existencia.
+A 0001 e metadata-driven (create_all do metadata atual), então em um banco
+novo esta tabela Já nasce por la; aqui garantimos a criação em bancos que
+foram migrados antes desta revisão. Por isso o guard de existência.
 
 Revision ID: 0002
 Revises: 0001

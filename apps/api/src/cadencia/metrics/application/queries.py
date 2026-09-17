@@ -1,4 +1,4 @@
-"""Consultas de metricas — orquestram leitura + calculadoras puras."""
+"""Consultas de métricas — orquestram leitura + calculadoras puras."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ class SprintBurndownQuery:
     async def execute(self, *, workspace_id: uuid.UUID, sprint_id: uuid.UUID) -> BurndownSeries:
         data = await self._reader.sprint_data(workspace_id=workspace_id, sprint_id=sprint_id)
         if data is None:
-            raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+            raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
         return build_burndown(data)
 
 
@@ -34,7 +34,7 @@ class SprintCfdQuery:
     async def execute(self, *, workspace_id: uuid.UUID, sprint_id: uuid.UUID) -> CfdSeries:
         data = await self._reader.sprint_data(workspace_id=workspace_id, sprint_id=sprint_id)
         if data is None:
-            raise NotFoundError("Sprint nao encontrada", code="SPRINT_NOT_FOUND")
+            raise NotFoundError("Sprint não encontrada", code="SPRINT_NOT_FOUND")
         sprint = data.sprint
         return build_cfd(
             sprint_id=sprint.id,
@@ -57,7 +57,7 @@ class ProjectVelocityQuery:
             workspace_id=workspace_id, project_id=project_id, last=max(1, min(last, 12))
         )
         if data is None:
-            raise NotFoundError("Projeto nao encontrado", code="PROJECT_NOT_FOUND")
+            raise NotFoundError("Projeto não encontrado", code="PROJECT_NOT_FOUND")
         series = [build_burndown(sprint_data) for sprint_data in data]
         return build_velocity(series, average_window=last)
 
@@ -80,5 +80,5 @@ class ProjectFlowTimesQuery:
             workspace_id=workspace_id, project_id=project_id, since=start, until=end
         )
         if items is None:
-            raise NotFoundError("Projeto nao encontrado", code="PROJECT_NOT_FOUND")
+            raise NotFoundError("Projeto não encontrado", code="PROJECT_NOT_FOUND")
         return build_flow_times(items)

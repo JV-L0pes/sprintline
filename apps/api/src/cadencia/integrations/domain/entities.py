@@ -71,7 +71,7 @@ class Integration(AggregateRoot):
 
     def disconnect(self) -> None:
         if self.status == "DISCONNECTED":
-            raise ConflictError("Integracao ja desconectada", code="INTEGRATION_DISCONNECTED")
+            raise ConflictError("Integração já desconectada", code="INTEGRATION_DISCONNECTED")
         self.status = "DISCONNECTED"
         self._record(IntegrationDisconnected(provider=self.provider))
 
@@ -136,7 +136,7 @@ class SyncJob(AggregateRoot):
 
     def mark_running(self, now: datetime) -> None:
         if self.state == "DONE":
-            raise ConflictError("Job ja concluido", code="JOB_ALREADY_DONE")
+            raise ConflictError("Job já concluído", code="JOB_ALREADY_DONE")
         self.state = "RUNNING"
         self.updated_at = now
 

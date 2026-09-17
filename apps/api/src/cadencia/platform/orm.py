@@ -23,7 +23,7 @@ class RateLimitHitRow(Base):
 
 
 class DomainEventRow(Base):
-    """Fonte de verdade para metricas e auditoria. Nunca sofre UPDATE/DELETE (RN-25)."""
+    """Fonte de verdade para métricas e auditoria. Nunca sofre UPDATE/DELETE (RN-25)."""
 
     __tablename__ = "domain_events"
     __table_args__ = (

@@ -19,13 +19,13 @@ describe("parseIsoDate", () => {
     expect(date.getUTCDate()).toBe(7);
   });
 
-  it("rejeita formato invalido", () => {
+  it("rejeita formato inválido", () => {
     expect(() => parseIsoDate("07/09/2026")).toThrow();
   });
 });
 
 describe("sprint ranges", () => {
-  it("calcula duracao inclusiva", () => {
+  it("calcula duração inclusiva", () => {
     expect(sprintDayCount("2026-09-07", "2026-09-20")).toBe(14);
     expect(diffInDays(parseIsoDate("2026-09-07"), parseIsoDate("2026-09-20"))).toBe(13);
   });
@@ -43,13 +43,13 @@ describe("sprint ranges", () => {
   });
 });
 
-describe("formatacao", () => {
+describe("formatação", () => {
   it("formata datas de forma estavel por locale", () => {
     expect(formatDateFull("2026-09-07", "pt-BR")).toContain("2026");
     expect(formatDate("2026-09-07", "en")).toMatch(/Sep/i);
   });
 
-  it("toIsoDate e addDays sao consistentes", () => {
+  it("toIsoDate e addDays são consistentes", () => {
     expect(toIsoDate(parseIsoDate("2026-09-07"))).toBe("2026-09-07");
     expect(toIsoDate(addDays(parseIsoDate("2026-09-07"), 13))).toBe("2026-09-20");
   });

@@ -1,4 +1,4 @@
-"""RN-23/RN-25: toda mutacao gera evento auditavel no log append-only."""
+"""RN-23/RN-25: toda mutação gera evento auditável no log append-only."""
 
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ async def test_full_flow_records_ordered_events_with_actor(
 async def test_events_are_append_only_no_update_delete_apis(
     client: httpx.AsyncClient, api_app: Any
 ) -> None:
-    """Nao existe superficie HTTP para mutar o event log (RN-25)."""
+    """Não existe superficie HTTP para mutar o event log (RN-25)."""
     headers = await register_and_login(client)
     await create_workspace(client, headers)
     events = await _events(api_app)

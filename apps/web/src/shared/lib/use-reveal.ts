@@ -3,8 +3,8 @@ import { useEffect } from "react";
 const REVEAL_SELECTOR = ".fade, .line";
 
 /**
- * Revela elementos com .fade/.line quando entram na viewport (padrao do
- * portfolio). Sem observer/JS, um timeout de seguranca revela tudo.
+ * Revela elementos com .fade/.line quando entram na viewport (padrão do
+ * portfolio). Sem observer/JS, um timeout de segurança revela tudo.
  */
 export function useReveal(deps: unknown[] = []): void {
   useEffect(() => {

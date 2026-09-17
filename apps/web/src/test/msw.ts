@@ -3,7 +3,7 @@ import { setupServer } from "msw/node";
 
 export const handlers = [
   http.post("*/api/v1/auth/refresh", () =>
-    HttpResponse.json({ code: "SESSION_NOT_FOUND", detail: "Sessao ausente" }, { status: 401 }),
+    HttpResponse.json({ code: "SESSION_NOT_FOUND", detail: "Sessão ausente" }, { status: 401 }),
   ),
   http.get("*/api/v1/meta", () =>
     HttpResponse.json({ app_name: "Sprintline", registration_mode: "open" }),

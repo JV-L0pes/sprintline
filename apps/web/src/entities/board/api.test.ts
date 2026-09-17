@@ -47,7 +47,7 @@ const board: Board = {
 };
 
 describe("groupItemsByColumn", () => {
-  it("agrupa por coluna mantendo a ordem de posicao", () => {
+  it("agrupa por coluna mantendo a ordem de posição", () => {
     const grouped = groupItemsByColumn(board);
     expect(grouped.get("todo")?.map((entry) => entry.id)).toEqual(["1", "2", "3"]);
     expect(grouped.get("done")).toEqual([]);
@@ -55,7 +55,7 @@ describe("groupItemsByColumn", () => {
 });
 
 describe("applyMove", () => {
-  it("move para outra coluna reindexando posicoes", () => {
+  it("move para outra coluna reindexando posições", () => {
     const moved = applyMove(board.items, "2", "done", 0);
     const movedItem = moved.find((entry) => entry.id === "2");
     expect(movedItem?.status_column_id).toBe("done");

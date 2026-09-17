@@ -1,4 +1,4 @@
-"""Schemas HTTP de metricas."""
+"""Schemas HTTP de métricas."""
 
 from __future__ import annotations
 

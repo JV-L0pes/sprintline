@@ -2,7 +2,7 @@
   "name": "cadencia",
   "private": true,
   "version": "0.1.0",
-  "description": "Cadencia — plataforma de tracking agil com kanban, metricas de sprint e integracao Jira",
+  "description": "Cadencia — plataforma de tracking ágil com kanban, métricas de sprint e integração Jira",
   "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": ">=20.19"

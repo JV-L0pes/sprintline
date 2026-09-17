@@ -156,7 +156,7 @@ async def test_sprint_lifecycle_with_carryover(client: httpx.AsyncClient) -> Non
     assert sprint_1.status_code == 201, sprint_1.text
     sprint_1_id = sprint_1.json()["id"]
 
-    # Iniciar sem goal esta bloqueado (RN-16)
+    # Iniciar sem goal está bloqueado (RN-16)
     bad = await client.post(
         f"/api/v1/workspaces/{workspace_id}/projects/{project['id']}/sprints",
         json={
@@ -173,7 +173,7 @@ async def test_sprint_lifecycle_with_carryover(client: httpx.AsyncClient) -> Non
     assert empty_start.status_code == 422
     assert empty_start.json()["code"] == "SPRINT_GOAL_REQUIRED"
 
-    # Sem itens atribuidos tambem bloqueia
+    # Sem itens atribuidos também bloqueia
     for item in (item_a, item_b):
         assign = await client.put(
             f"/api/v1/workspaces/{workspace_id}/items/{item['id']}/sprint",
@@ -188,12 +188,12 @@ async def test_sprint_lifecycle_with_carryover(client: httpx.AsyncClient) -> Non
     assert started.status_code == 200
     assert started.json()["state"] == "ACTIVE"
 
-    # Nao pode haver duas sprints ativas (RN-15)
+    # Não pode haver duas sprints ativas (RN-15)
     second = await client.post(
         f"/api/v1/workspaces/{workspace_id}/projects/{project['id']}/sprints",
         json={
             "name": "Sprint 2",
-            "goal": "Proxima",
+            "goal": "Próxima",
             "start_date": (today + timedelta(days=7)).isoformat(),
             "end_date": (today + timedelta(days=20)).isoformat(),
         },

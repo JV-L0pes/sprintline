@@ -1,4 +1,4 @@
-"""Rotas HTTP de integracao com o Jira."""
+"""Rotas HTTP de integração com o Jira."""
 
 from __future__ import annotations
 
@@ -201,7 +201,7 @@ async def list_jobs(
 ) -> list[schemas.JobOut]:
     integration = await SqlIntegrationRepository(session).get(connection_id, access.workspace.id)
     if integration is None:
-        raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+        raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
     jobs = await SqlSyncJobRepository(session).list_for_connection(integration.id)
     return [schemas.JobOut.model_validate(job_view(job)) for job in jobs]
 
@@ -220,7 +220,7 @@ async def run_import_chunk(
 ) -> schemas.JobOut:
     integration = await SqlIntegrationRepository(session).get(connection_id, workspace_id)
     if integration is None:
-        raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+        raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
     create_item, move_item = _work_use_cases(session)
     if integration.provider == "TRELLO":
         view = await RunTrelloImportChunk(
@@ -335,7 +335,7 @@ async def trello_webhook(
 ) -> dict[str, Any]:
     settings = request.app.state.settings
     if token != webhook_token(str(connection_id), settings):
-        raise NotFoundError("Webhook nao encontrado", code="WEBHOOK_NOT_FOUND")
+        raise NotFoundError("Webhook não encontrado", code="WEBHOOK_NOT_FOUND")
     payload = await request.json()
     _, move_item = _work_use_cases(session)
     accepted = await HandleTrelloWebhook(
@@ -376,7 +376,7 @@ async def jira_webhook(
 ) -> dict[str, Any]:
     settings = request.app.state.settings
     if token != webhook_token(str(connection_id), settings):
-        raise NotFoundError("Webhook nao encontrado", code="WEBHOOK_NOT_FOUND")
+        raise NotFoundError("Webhook não encontrado", code="WEBHOOK_NOT_FOUND")
     payload = await request.json()
     _, move_item = _work_use_cases(session)
     accepted = await HandleJiraWebhook(

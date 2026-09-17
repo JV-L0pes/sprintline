@@ -130,7 +130,7 @@ export function MemberManagement({
                 <span className="grid gap-0.5">
                   <span className="font-semibold">
                     {member.name}
-                    {member.user_id === user?.id ? " (voce)" : ""}
+                    {member.user_id === user?.id ? " (você)" : ""}
                   </span>
                   <span className="mono text-ash">{member.email}</span>
                 </span>

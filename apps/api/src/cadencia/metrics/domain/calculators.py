@@ -1,7 +1,7 @@
-"""Calculadoras puras das metricas ageis (spec RM-01..RM-15).
+"""Calculadoras puras das métricas ágeis (spec RM-01..RM-15).
 
 Sem I/O, sem relogio global: tudo entra por parametro — o que torna cada
-invariante testavel com property-based testing.
+invariante testável com property-based testing.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ from cadencia.work.domain.value_objects import ProjectMode, StatusCategory
 
 
 def working_days_between(start: date, end: date, working_days: tuple[int, ...]) -> list[date]:
-    """RM-01: dias uteis do workspace no intervalo (inclusivo)."""
+    """RM-01: dias úteis do workspace no intervalo (inclusivo)."""
     days: list[date] = []
     current = start
     while current <= end:
@@ -91,7 +91,7 @@ def _scope_changes(
 def build_burndown(
     data: SprintMetricsData,
 ) -> BurndownSeries:
-    """RM-02..RM-06: serie diaria de escopo, concluido, restante e ideal."""
+    """RM-02..RM-06: serie diaria de escopo, concluído, restante e ideal."""
     sprint: SprintRef = data.sprint
     mode = sprint.mode
     days = working_days_between(sprint.start_date, sprint.end_date, sprint.working_days)
@@ -149,7 +149,7 @@ def build_burndown(
 
 
 def build_velocity(series: list[BurndownSeries], *, average_window: int = 3) -> VelocityReport:
-    """RM-08: velocity por sprint + media movel das ultimas N sprints."""
+    """RM-08: velocity por sprint + média móvel das últimas N sprints."""
     points: list[VelocityPoint] = []
     for burndown in series:
         added = sum(change.delta for change in burndown.scope_changes if change.delta > 0)
@@ -181,7 +181,7 @@ def build_cfd(
     timezone: str,
     items: list[ItemFlow],
 ) -> CfdSeries:
-    """RM-11: contagem de itens por categoria ao fim de cada dia util."""
+    """RM-11: contagem de itens por categoria ao fim de cada dia útil."""
     days = working_days_between(start_date, end_date, working_days)
     series: list[CfdDay] = []
     categories = [category.value for category in StatusCategory]
@@ -197,7 +197,7 @@ def build_cfd(
 
 
 def percentile(values: list[float], fraction: float) -> float | None:
-    """Percentil com interpolacao linear (a convencao de flow metrics)."""
+    """Percentil com interpolação linear (a convenção de flow metrics)."""
     if not values:
         return None
     ordered = sorted(values)

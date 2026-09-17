@@ -2,7 +2,7 @@
 
 A Vercel detecta a variavel `app` (ASGI) em arquivos sob `api/`. O `src/` do
 projeto entra no `sys.path` porque o runtime instala apenas as dependencias de
-`requirements.txt` — o pacote local nao e instalado no deploy.
+`requirements.txt` — o pacote local não é instalado no deploy.
 """
 
 from __future__ import annotations

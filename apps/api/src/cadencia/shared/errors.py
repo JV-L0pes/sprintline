@@ -1,4 +1,4 @@
-"""Erros de dominio — carregam codigo estavel de negocio (RFC 9457 no transporte)."""
+"""Erros de dominio — carregam código estavel de negocio (RFC 9457 no transporte)."""
 
 from __future__ import annotations
 

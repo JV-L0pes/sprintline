@@ -71,13 +71,13 @@ jobs:
           uv run alembic upgrade head
           uv run alembic downgrade base
           uv run alembic upgrade head
-      - name: Seed de demonstracao (smoke)
+      - name: Seed de demonstração (smoke)
         env:
           CADENCIA_DATABASE_URL: postgresql+asyncpg://cadencia:cadencia@localhost:5432/cadencia_ci
         run: uv run python scripts/seed_demo.py
 
   security:
-    name: security — secrets e dependencias
+    name: security — secrets e dependências
     runs-on: ubuntu-latest
     permissions:
       contents: read

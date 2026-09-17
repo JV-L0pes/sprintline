@@ -53,7 +53,7 @@ async function rawRequest(path: string, options: RequestOptions): Promise<Respon
   });
 }
 
-/** Renova a sessao usando o cookie httpOnly; reutilizado no boot do app. */
+/** Renova a sessão usando o cookie httpOnly; reutilizado no boot do app. */
 export async function silentRefresh(): Promise<SessionResponse | null> {
   try {
     const response = await rawRequest("/api/v1/auth/refresh", { method: "POST" });

@@ -1,4 +1,4 @@
-"""Colunas configuraveis do board: criar, renomear, WIP, ordem e remover."""
+"""Colunas configuráveis do board: criar, renomear, WIP, ordem e remover."""
 
 from __future__ import annotations
 
@@ -82,7 +82,7 @@ async def test_delete_column_rules(client: httpx.AsyncClient) -> None:
     headers, workspace_id, project_id, board = await _setup(client)
     todo_id = board["columns"][0]["id"]
 
-    # Nao pode remover a ultima coluna de uma categoria (RN-06)
+    # Não pode remover a última coluna de uma categoria (RN-06)
     last_of_category = await client.delete(
         f"/api/v1/workspaces/{workspace_id}/projects/{project_id}/board/columns/{todo_id}",
         headers=headers,

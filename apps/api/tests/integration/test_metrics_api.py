@@ -1,4 +1,4 @@
-"""Metricas de ponta a ponta: os numeros do burndown refletem o event log."""
+"""Métricas de ponta a ponta: os números do burndown refletem o event log."""
 
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ async def test_burndown_endpoint_reflects_real_events(client: httpx.AsyncClient)
         assert {change["kind"] for change in changes} == {"added"}
         assert sum(change["delta"] for change in changes) == 13
         assert {change["date"] for change in changes} == {"2026-09-16"}
-        # Concluido nunca retroage apos o dia do evento
+        # Concluído nunca retroage após o dia do evento
         assert body["days"][0]["completed"] == 0
 
 

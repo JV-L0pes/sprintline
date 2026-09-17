@@ -1,4 +1,4 @@
-"""Portas de persistencia do contexto integrations."""
+"""Portas de persistência do contexto integrations."""
 
 from __future__ import annotations
 
@@ -70,5 +70,5 @@ class WebhookEventRepository(Protocol):
     async def register(
         self, connection_id: uuid.UUID, external_event_id: str, received_at: datetime
     ) -> bool:
-        """Retorna True se o evento e novo; False se ja foi processado (RN-20)."""
+        """Retorna True se o evento e novo; False se já foi processado (RN-20)."""
         ...

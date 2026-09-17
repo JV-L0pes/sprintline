@@ -79,7 +79,7 @@ def job_view(job: SyncJob) -> SyncJobView:
 
 
 def snap_story_points(value: float | None) -> int | None:
-    """Arredonda um valor do Jira para o Fibonacci mais proximo (RN-10)."""
+    """Arredonda um valor do Jira para o Fibonacci mais próximo (RN-10)."""
     if value is None or value <= 0:
         return None
     candidates = sorted(FIBONACCI_POINTS)
@@ -87,7 +87,7 @@ def snap_story_points(value: float | None) -> int | None:
 
 
 class JiraConnectionService:
-    """Obtem access token valido, renovando via refresh quando necessario."""
+    """Obtem access token válido, renovando via refresh quando necessario."""
 
     def __init__(
         self,
@@ -105,7 +105,7 @@ class JiraConnectionService:
         stored = await self._tokens.load(integration.id)
         if stored is None or not stored.refresh_token:
             raise NotFoundError(
-                "Tokens da integracao nao encontrados; reconecte o Jira",
+                "Tokens da integração não encontrados; reconecte o Jira",
                 code="TOKENS_MISSING",
             )
         now = self._clock.now()
@@ -135,7 +135,7 @@ class StartJiraOAuth:
     async def execute(self, *, workspace_id: uuid.UUID, user_id: uuid.UUID) -> str:
         if not self._settings.jira_client_id:
             raise ValidationError(
-                "JIRA_CLIENT_ID nao configurado no servidor", code="JIRA_NOT_CONFIGURED"
+                "JIRA_CLIENT_ID não configurado no servidor", code="JIRA_NOT_CONFIGURED"
             )
         state = encode_state_token(
             {
@@ -168,12 +168,12 @@ class CompleteJiraOAuth:
     async def execute(self, *, code: str, state: str) -> IntegrationView:
         claims = decode_state_token(state, settings=self._settings)
         if claims.get("typ") != "jira_oauth":
-            raise UnauthorizedError("State OAuth invalido", code="INVALID_OAUTH_STATE")
+            raise UnauthorizedError("State OAuth inválido", code="INVALID_OAUTH_STATE")
         workspace_id = uuid.UUID(claims["wid"])
         oauth = await self._gateway.exchange_code(code)
         sites = await self._gateway.accessible_resources(oauth.access_token)
         if not sites:
-            raise ValidationError("Nenhum site Jira acessivel para esta conta", code="NO_JIRA_SITE")
+            raise ValidationError("Nenhum site Jira acessível para esta conta", code="NO_JIRA_SITE")
         site = sites[0]
         now = self._clock.now()
         integration = Integration.connect(
@@ -186,7 +186,7 @@ class CompleteJiraOAuth:
         refresh = oauth.refresh_token or ""
         if not refresh:
             raise ValidationError(
-                "Jira nao retornou refresh_token; inclua offline_access no escopo",
+                "Jira não retornou refresh_token; inclua offline_access no escopo",
                 code="JIRA_MISSING_REFRESH_TOKEN",
             )
         await self._connections.add(integration)
@@ -222,7 +222,7 @@ class DisconnectIntegration:
     async def execute(self, *, workspace_id: uuid.UUID, connection_id: uuid.UUID) -> None:
         integration = await self._connections.get(connection_id, workspace_id)
         if integration is None:
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         await self._tokens.clear(integration.id)
         await self._mappings.delete_for_connection(integration.id)
         await self._connections.delete(integration)
@@ -244,7 +244,7 @@ class DiscoverJiraFields:
     ) -> FieldDiscoveryView:
         integration = await self._connections.get(connection_id, workspace_id)
         if integration is None:
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         token = await self._service.access_token(integration)
         fields = await self._gateway.list_fields(token, integration.cloud_id)
         candidates = [
@@ -284,7 +284,7 @@ class StartJiraImport:
     ) -> SyncJobView:
         integration = await self._connections.get(connection_id, workspace_id)
         if integration is None:
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         job = SyncJob.start_import(
             connection_id=integration.id,
             project_key=project_key.strip().upper(),
@@ -333,10 +333,10 @@ class RunJiraImportChunk:
     ) -> SyncJobView:
         integration = await self._connections.get(connection_id, workspace_id)
         if integration is None:
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         job = await self._jobs.get(job_id)
         if job is None or job.connection_id != integration.id:
-            raise NotFoundError("Job de importacao nao encontrado", code="JOB_NOT_FOUND")
+            raise NotFoundError("Job de importação não encontrado", code="JOB_NOT_FOUND")
         now = self._clock.now()
         job.mark_running(now)
         token = await self._service.access_token(integration)
@@ -421,7 +421,7 @@ class HandleJiraWebhook:
     async def execute(self, *, connection_id: uuid.UUID, payload: dict[str, Any]) -> bool:
         integration = await self._connections.get_by_id(connection_id)
         if integration is None or integration.status != "CONNECTED":
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         event_type = str(payload.get("webhookEvent", ""))
         issue = payload.get("issue") or {}
         issue_key = str(issue.get("key", ""))

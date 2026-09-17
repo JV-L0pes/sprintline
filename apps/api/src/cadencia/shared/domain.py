@@ -11,7 +11,7 @@ from cadencia.shared.ids import uuid7
 
 @dataclass(frozen=True, kw_only=True)
 class DomainEvent:
-    """Evento imutavel. Subclasses declaram `event_type` e campos de payload."""
+    """Evento imutável. Subclasses declaram `event_type` e campos de payload."""
 
     event_type: ClassVar[str] = ""
 
@@ -35,7 +35,7 @@ def _serialize(value: Any) -> Any:
 
 @dataclass(frozen=True)
 class ValueObject:
-    """Marcador semantico para objetos de valor (sempre imutaveis)."""
+    """Marcador semântico para objetos de valor (sempre imutáveis)."""
 
 
 class Entity:
@@ -62,7 +62,7 @@ class Entity:
 
 
 class AggregateRoot(Entity):
-    """Raiz de agregado: unica porta de escrita e de levantamento de eventos."""
+    """Raiz de agregado: única porta de escrita e de levantamento de eventos."""
 
 
 @dataclass

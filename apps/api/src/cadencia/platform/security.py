@@ -58,13 +58,13 @@ def decode_access_token(token: str, settings: Settings) -> uuid.UUID:
             options={"require": ["sub", "exp", "iss", "typ"]},
         )
     except jwt.PyJWTError as exc:
-        raise UnauthorizedError("Token de acesso invalido ou expirado") from exc
+        raise UnauthorizedError("Token de acesso inválido ou expirado") from exc
     if claims.get("typ") != "access":
-        raise UnauthorizedError("Tipo de token invalido")
+        raise UnauthorizedError("Tipo de token inválido")
     try:
         return uuid.UUID(str(claims["sub"]))
     except (KeyError, ValueError) as exc:
-        raise UnauthorizedError("Token de acesso invalido") from exc
+        raise UnauthorizedError("Token de acesso inválido") from exc
 
 
 def generate_opaque_token() -> str:
@@ -97,11 +97,11 @@ def decode_state_token(token: str, *, settings: Settings) -> dict[str, str]:
             options={"require": ["exp", "iss"]},
         )
     except jwt.PyJWTError as exc:
-        raise UnauthorizedError("State OAuth invalido ou expirado") from exc
+        raise UnauthorizedError("State OAuth inválido ou expirado") from exc
     return {str(key): str(value) for key, value in claims.items()}
 
 
 def webhook_token(connection_id: str, settings: Settings) -> str:
-    """Segredo de URL para webhooks publicos (sem assinatura nativa no 3LO)."""
+    """Segredo de URL para webhooks públicos (sem assinatura nativa no 3LO)."""
     digest = hashlib.sha256(f"{connection_id}:{settings.jwt_secret}".encode()).hexdigest()
     return digest[:32]

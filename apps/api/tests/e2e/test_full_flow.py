@@ -89,7 +89,7 @@ async def test_full_journey(client: httpx.AsyncClient) -> None:
                 headers=headers,
             )
         ).json()
-        # Item entrou no sprint apos o inicio (start = hoje-3): escopo inicial 0,
+        # Item entrou no sprint após o inicio (start = hoje-3): escopo inicial 0,
         # degrau de +5 registrado como mudanca de escopo (RM-02).
         assert burndown["totals"]["completed"] == 5
         assert burndown["totals"]["initial_scope"] == 0

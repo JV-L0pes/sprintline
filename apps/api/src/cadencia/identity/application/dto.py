@@ -1,4 +1,4 @@
-"""DTOs de entrada/saida do contexto identity (sem dependencia de framework)."""
+"""DTOs de entrada/saída do contexto identity (sem dependência de framework)."""
 
 from __future__ import annotations
 

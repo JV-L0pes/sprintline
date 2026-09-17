@@ -1,7 +1,7 @@
 """Rate limit persistido (funciona em serverless, sem Redis).
 
 Janela fixa por chave: `chave -> (inicio_da_janela, contador)`. Volume baixo
-(single-digit usuarios), entao o read-modify-write dentro da transacao da
+(single-digit usuários), então o read-modify-write dentro da transacao da
 request e suficiente; colisoes no pior caso afrouxam levemente o limite.
 """
 
@@ -37,7 +37,7 @@ class RateLimiter:
                 row.count = 1
             await self._session.flush()
             # O contador precisa sobreviver ao rollback de uma request que falha
-            # (ex.: 401 no login), entao commitamos imediatamente.
+            # (ex.: 401 no login), então commitamos imediatamente.
             await self._session.commit()
             return
 

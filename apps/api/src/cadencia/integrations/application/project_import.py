@@ -1,7 +1,7 @@
-"""Helper compartilhado de importacao: garante o projeto interno de destino.
+"""Helper compartilhado de importação: garante o projeto interno de destino.
 
 O vinculo externo -> interno fica em `external_mappings` (entity_type="project"),
-garantindo idempotencia entre chunks e entre Jira/Trello.
+garantindo idempotência entre chunks e entre Jira/Trello.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ _KEY_SANITIZE = re.compile(r"[^A-Za-z0-9]")
 
 
 def project_key_from_name(name: str) -> str:
-    """Deriva uma chave valida (^[A-Z][A-Z0-9]{1,9}$) a partir do nome externo."""
+    """Deriva uma chave válida (^[A-Z][A-Z0-9]{1,9}$) a partir do nome externo."""
     key = _KEY_SANITIZE.sub("", name).upper()[:10]
     if len(key) < 2:
         key = f"T{key}".ljust(2, "X")
@@ -65,7 +65,7 @@ async def ensure_import_project(
 
     project = await projects.get(view.id, workspace_id)
     if project is None:
-        raise NotFoundError("Projeto interno nao encontrado", code="PROJECT_NOT_FOUND")
+        raise NotFoundError("Projeto interno não encontrado", code="PROJECT_NOT_FOUND")
     board = await _board_or_raise(boards, view.id)
     return project, board
 
@@ -73,5 +73,5 @@ async def ensure_import_project(
 async def _board_or_raise(boards: BoardRepository, project_id: uuid.UUID) -> Board:
     board = await boards.get_by_project(project_id)
     if board is None:
-        raise NotFoundError("Board interno nao encontrado", code="BOARD_NOT_FOUND")
+        raise NotFoundError("Board interno não encontrado", code="BOARD_NOT_FOUND")
     return board

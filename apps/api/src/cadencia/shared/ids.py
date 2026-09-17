@@ -1,4 +1,4 @@
-"""UUIDv7 (RFC 9562) — ids ordenaveis por tempo, gerados sem dependencia externa."""
+"""UUIDv7 (RFC 9562) — ids ordenáveis por tempo, gerados sem dependência externa."""
 
 from __future__ import annotations
 

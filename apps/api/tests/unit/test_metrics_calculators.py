@@ -1,4 +1,4 @@
-"""Testes das calculadoras de metricas: golden dataset + propriedades (RM-01..RM-15)."""
+"""Testes das calculadoras de métricas: golden dataset + propriedades (RM-01..RM-15)."""
 
 from __future__ import annotations
 
@@ -210,7 +210,7 @@ def test_percentile_edge_cases() -> None:
     done_days=st.lists(st.integers(min_value=0, max_value=9), min_size=0, max_size=6),
 )
 def test_burndown_invariants(points: list[int], done_days: list[int]) -> None:
-    """RM-04: restante nunca negativo; ideal nos extremos; concluido monotono."""
+    """RM-04: restante nunca negativo; ideal nos extremos; concluído monotono."""
     items: list[ItemFlow] = []
     for index, point_value in enumerate(points):
         day = 7 + (done_days[index] if index < len(done_days) else 0) % 10
@@ -227,11 +227,11 @@ def test_burndown_invariants(points: list[int], done_days: list[int]) -> None:
     completed = [point.completed for point in series.days]
     assert completed == sorted(completed)
     scope_values = [point.scope for point in series.days]
-    assert scope_values == sorted(scope_values)  # sem remocoes neste cenario
+    assert scope_values == sorted(scope_values)  # sem remoções neste cenário
 
 
 def test_timezone_boundary_uses_workspace_local_day() -> None:
-    """RM-01: item concluido 22h em Sao Paulo conta no dia local, nao no UTC."""
+    """RM-01: item concluído 22h em São Paulo conta no dia local, não no UTC."""
     sprint = replace(SPRINT, timezone="America/Sao_Paulo")
     # 2026-09-08 22:00 BRT == 2026-09-09 01:00 UTC
     done_local = datetime(2026, 9, 9, 1, 0, tzinfo=UTC)
@@ -250,7 +250,7 @@ def test_timezone_boundary_uses_workspace_local_day() -> None:
         ),
     )
     series = build_burndown(SprintMetricsData(sprint=sprint, items=[item]))
-    # 22h BRT de 2026-09-08 ainda pertence ao dia local 08/09 (dia 1 da serie)
+    # 22h BRT de 2026-09-08 ainda pertence ao dia local 08/09 (dia 1 da série)
     assert series.days[1].completed == pytest.approx(5)
     assert series.days[0].completed == pytest.approx(0)
 

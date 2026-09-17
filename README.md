@@ -54,7 +54,7 @@ pnpm api:dev       # http://localhost:8000 (docs em /docs)
 pnpm web:dev       # http://localhost:5173 (proxy /api -> :8000)
 ```
 
-O seed de demonstracao (`pnpm api:seed`) cria `demo@cadencia.dev` / `cadencia-demo-2026` **apenas localmente** (recusa rodar em producao sem --force). O banco fica em
+O seed de demonstração (`pnpm api:seed`) cria `demo@cadencia.dev` / `cadencia-demo-2026` **apenas localmente** (recusa rodar em produção sem --force). O banco fica em
 `apps/api/cadencia.db` (apague o arquivo para recomeçar). Para Jira/Trello reais, copie
 `apps/api/.env.example` para `apps/api/.env` e preencha `CADENCIA_JIRA_CLIENT_ID/SECRET`
 e/ou `CADENCIA_TRELLO_API_KEY`.
@@ -78,8 +78,8 @@ uv run pytest                           # 108 testes: unit, integration, e2e de 
 E2E real (Playwright sobe API+seed+web sozinho):
 
 ```bash
-cp apps/api/.env.example apps/api/.env   # se ainda nao existir
-CADENCIA_E2E=1 pnpm --filter @cadencia/web test:e2e   # defina UV_BIN se o uv nao estiver no PATH
+cp apps/api/.env.example apps/api/.env   # se ainda não existir
+CADENCIA_E2E=1 pnpm --filter @cadencia/web test:e2e   # defina UV_BIN se o uv não estiver no PATH
 ```
 
 O CI (`.github/workflows/ci.yml`) roda tudo isso, aplica as migrações Alembic em um Postgres real, executa o seed como smoke test e roda gitleaks/pip-audit.
@@ -111,7 +111,7 @@ cd ../web && npx vercel link         # crie o projeto sprintline-web
 7. **Trello**: crie uma API key em https://trello.com/power-ups/admin e configure `CADENCIA_TRELLO_API_KEY`;
    o usuário autoriza pelo próprio app (o token volta para `/integrations/trello/callback`).
 
-Detalhes operacionais em [`docs/runbook/operacao.md`](docs/runbook/operacao.md).
+Detalhes operacionais em [`docs/runbook/operação.md`](docs/runbook/operação.md).
 
 ## Estrutura de pastas
 

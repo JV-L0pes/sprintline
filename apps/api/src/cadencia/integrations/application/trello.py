@@ -1,6 +1,6 @@
 """Casos de uso do conector Trello.
 
-Autenticacao: API key do app (server-side) + token gerado pelo fluxo
+Autenticação: API key do app (server-side) + token gerado pelo fluxo
 `/1/authorize` com `response_type=token` — o token volta no fragmento da URL
 de retorno e o frontend o entrega via `POST .../trello/connect`.
 """
@@ -8,6 +8,7 @@ de retorno e o frontend o entrega via `POST .../trello/connect`.
 from __future__ import annotations
 
 import re
+import unicodedata
 import uuid
 from datetime import timedelta
 from typing import Any
@@ -41,7 +42,7 @@ from cadencia.work.domain.repositories import BoardRepository, ProjectRepository
 from cadencia.work.domain.value_objects import StatusCategory, WorkItemType
 
 TRELLO_PROVIDER = "TRELLO"
-_TOKEN_TTL_DAYS = 3650  # expiracao "never" no authorize do Trello
+_TOKEN_TTL_DAYS = 3650  # expiração "never" no authorize do Trello
 
 _POINTS_RE = re.compile(r"[\(\[]\s*(\d{1,3})\s*[\)\]]\s*$")
 _DONE_HINTS = ("done", "conclu", "feito", "finaliz", "complete", "deploy", "produ")
@@ -49,7 +50,7 @@ _DOING_HINTS = ("progress", "doing", "andamento", "review", "revis", "qa", "test
 
 
 def parse_points_from_name(name: str) -> int | None:
-    """Story points no Trello nao sao nativos: le `(5)` ou `[5]` no fim do nome."""
+    """Story points no Trello não são nativos: le `(5)` ou `[5]` no fim do nome."""
     match = _POINTS_RE.search(name.strip())
     if match is None:
         return None
@@ -57,7 +58,7 @@ def parse_points_from_name(name: str) -> int | None:
 
 
 def category_for_list(name: str) -> StatusCategory:
-    """Heuristica de nome de lista -> categoria (override manual fica no board)."""
+    """Heurística de nome de lista -> categoria (override manual fica no board)."""
     lowered = name.lower()
     if any(hint in lowered for hint in _DONE_HINTS):
         return StatusCategory.DONE
@@ -66,13 +67,19 @@ def category_for_list(name: str) -> StatusCategory:
     return StatusCategory.TODO
 
 
+def _normalize_label(label: str) -> str:
+    """Minusculas sem acentos, para casar labels externas ("História" == "historia")."""
+    decomposed = unicodedata.normalize("NFKD", label)
+    return "".join(char for char in decomposed if not unicodedata.combining(char)).lower()
+
+
 def item_type_for_labels(labels: tuple[str, ...]) -> WorkItemType:
-    lowered = {label.lower() for label in labels}
+    lowered = {_normalize_label(label) for label in labels}
     if "bug" in lowered:
         return WorkItemType.BUG
     if "epic" in lowered:
         return WorkItemType.EPIC
-    if lowered & {"story", "historia", "história"}:
+    if lowered & {"story", "historia"}:
         return WorkItemType.STORY
     return WorkItemType.TASK
 
@@ -81,7 +88,7 @@ async def access_token_for(tokens: TokenStore, integration: Integration) -> str:
     stored = await tokens.load(integration.id)
     if stored is None or not stored.access_token:
         raise NotFoundError(
-            "Token da integracao nao encontrado; reconecte o Trello", code="TOKENS_MISSING"
+            "Token da integração não encontrado; reconecte o Trello", code="TOKENS_MISSING"
         )
     return stored.access_token
 
@@ -94,7 +101,7 @@ class StartTrelloAuthorize:
     async def execute(self) -> str:
         if not self._settings.trello_api_key:
             raise ValidationError(
-                "TRELLO_API_KEY nao configurada no servidor", code="TRELLO_NOT_CONFIGURED"
+                "TRELLO_API_KEY não configurada no servidor", code="TRELLO_NOT_CONFIGURED"
             )
         return self._gateway.build_authorize_url(self._settings.trello_return_url)
 
@@ -127,7 +134,7 @@ class ConnectTrello:
             None,
         )
         if existing is not None:
-            # Reconexao idempotente: apenas atualiza o token do membro ja conectado.
+            # Reconexao idempotente: apenas atualiza o token do membro já conectado.
             await self._tokens.save(
                 existing.id,
                 access_token=cleaned,
@@ -168,7 +175,7 @@ class ListTrelloBoards:
     ) -> list[TrelloBoardView]:
         integration = await self._connections.get(connection_id, workspace_id)
         if integration is None or integration.provider != TRELLO_PROVIDER:
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         token = await access_token_for(self._tokens, integration)
         boards = await self._gateway.member_boards(token)
         return [
@@ -194,7 +201,7 @@ class StartTrelloImport:
     ) -> SyncJobView:
         integration = await self._connections.get(connection_id, workspace_id)
         if integration is None or integration.provider != TRELLO_PROVIDER:
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         job = SyncJob(
             connection_id=integration.id,
             job_type="IMPORT_PROJECT",
@@ -245,17 +252,17 @@ class RunTrelloImportChunk:
     ) -> SyncJobView:
         integration = await self._connections.get(connection_id, workspace_id)
         if integration is None or integration.provider != TRELLO_PROVIDER:
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         job = await self._jobs.get(job_id)
         if job is None or job.connection_id != integration.id:
-            raise NotFoundError("Job de importacao nao encontrado", code="JOB_NOT_FOUND")
+            raise NotFoundError("Job de importação não encontrado", code="JOB_NOT_FOUND")
         now = self._clock.now()
         job.mark_running(now)
         token = await access_token_for(self._tokens, integration)
         board_id = job.cursor.board_id or job.cursor.project_key
         external_board = await self._gateway.get_board(token, board_id)
         if external_board is None:
-            raise NotFoundError("Board do Trello nao encontrado", code="BOARD_NOT_FOUND")
+            raise NotFoundError("Board do Trello não encontrado", code="BOARD_NOT_FOUND")
 
         project, internal_board = await ensure_import_project(
             projects=self._projects,
@@ -358,7 +365,7 @@ class HandleTrelloWebhook:
     async def execute(self, *, connection_id: uuid.UUID, payload: dict[str, Any]) -> bool:
         integration = await self._connections.get_by_id(connection_id)
         if integration is None or integration.provider != TRELLO_PROVIDER:
-            raise NotFoundError("Integracao nao encontrada", code="INTEGRATION_NOT_FOUND")
+            raise NotFoundError("Integração não encontrada", code="INTEGRATION_NOT_FOUND")
         action = payload.get("action") or {}
         action_id = str(action.get("id", ""))
         action_type = str(action.get("type", ""))

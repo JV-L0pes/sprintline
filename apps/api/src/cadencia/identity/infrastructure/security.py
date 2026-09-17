@@ -1,4 +1,4 @@
-"""Adaptadores de seguranca do contexto identity (portas da aplicacao)."""
+"""Adaptadores de segurança do contexto identity (portas da aplicação)."""
 
 from __future__ import annotations
 

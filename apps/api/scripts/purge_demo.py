@@ -1,12 +1,12 @@
-"""Remove os dados de demonstracao (usuario demo, workspaces e eventos).
+"""Remove os dados de demonstração (usuário demo, workspaces e eventos).
 
 Uso:
     CADENCIA_DATABASE_URL=<url> uv run python scripts/purge_demo.py --yes
 
-Exclui: memberships/sessions/invites do usuario demo, os workspaces em que ele
-e owner (cascata em projetos/boards/itens/sprints/integracoes), os eventos
-desses workspaces (a tabela de eventos nao tem FK, entao e explicito) e as
-organizacoes orfas.
+Exclui: memberships/sessions/invites do usuário demo, os workspaces em que ele
+e owner (cascata em projetos/boards/itens/sprints/integrações), os eventos
+desses workspaces (a tabela de eventos não tem FK, então e explícito) e as
+organizações orfas.
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ DEMO_EMAIL = "demo@cadencia.dev"
 
 async def purge() -> None:
     if "--yes" not in sys.argv:
-        print("Passa --yes para confirmar a remocao dos dados de demonstracao.")
+        print("Passa --yes para confirmar a remoção dos dados de demonstração.")
         return
     settings = get_settings()
     engine = build_engine(settings)
@@ -42,7 +42,7 @@ async def purge() -> None:
             await session.execute(sa.select(UserRow.id).where(UserRow.email == DEMO_EMAIL))
         ).scalar_one_or_none()
         if user_id is None:
-            print("Usuario demo nao existe; nada a remover.")
+            print("Usuário demo não existe; nada a remover.")
             await engine.dispose()
             return
 
@@ -76,7 +76,7 @@ async def purge() -> None:
             await session.delete(row)
         await session.commit()
         print(
-            f"Removidos: usuario demo, {len(workspace_ids)} workspaces, {removed_events} eventos."
+            f"Removidos: usuário demo, {len(workspace_ids)} workspaces, {removed_events} eventos."
         )
     await engine.dispose()
 

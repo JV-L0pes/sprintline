@@ -42,7 +42,7 @@ class User(AggregateRoot):
     ) -> None:
         super().__init__(entity_id)
         if not name.strip():
-            raise ValidationError("Nome e obrigatorio", code="INVALID_NAME")
+            raise ValidationError("Nome e obrigatório", code="INVALID_NAME")
         self.email = normalize_email(email)
         self.name = name.strip()[:120]
         self.password_hash = password_hash
@@ -109,7 +109,7 @@ class Workspace(AggregateRoot):
     ) -> None:
         super().__init__(entity_id)
         if not name.strip():
-            raise ValidationError("Nome do workspace e obrigatorio", code="INVALID_NAME")
+            raise ValidationError("Nome do workspace e obrigatório", code="INVALID_NAME")
         self.organization_id = organization_id
         self.name = name.strip()[:120]
         self.slug = slug
@@ -239,7 +239,7 @@ class Invite(AggregateRoot):
     def validate_for(self, *, user_email: str, now: datetime) -> None:
         """Mesmas checagens do accept, sem consumir o convite."""
         if self.accepted_at is not None:
-            raise ConflictError("Convite ja utilizado", code="INVITE_ALREADY_USED")
+            raise ConflictError("Convite já utilizado", code="INVITE_ALREADY_USED")
         if self.expires_at <= now:
             raise ConflictError("Convite expirado", code="INVITE_EXPIRED")
         if normalize_email(user_email) != self.email:
@@ -295,9 +295,9 @@ class Session(AggregateRoot):
 
     def ensure_active(self, now: datetime) -> None:
         if self.is_revoked:
-            raise UnauthorizedError("Sessao revogada", code="SESSION_REVOKED")
+            raise UnauthorizedError("Sessão revogada", code="SESSION_REVOKED")
         if self.expires_at <= now:
-            raise UnauthorizedError("Sessao expirada", code="SESSION_EXPIRED")
+            raise UnauthorizedError("Sessão expirada", code="SESSION_EXPIRED")
 
     def revoke(self, now: datetime) -> None:
         self.revoked_at = now

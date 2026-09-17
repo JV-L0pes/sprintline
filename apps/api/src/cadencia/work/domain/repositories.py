@@ -1,4 +1,4 @@
-"""Portas de persistencia do contexto work."""
+"""Portas de persistência do contexto work."""
 
 from __future__ import annotations
 

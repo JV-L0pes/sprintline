@@ -1,12 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const e2eEnabled = process.env.CADENCIA_E2E === "1";
-// Em CI o uv esta no PATH; localmente defina UV_BIN com o caminho completo.
+// Em CI o uv está no PATH; localmente defina UV_BIN com o caminho completo.
 const uvBin = process.env.UV_BIN ?? "uv";
 
 /**
- * E2E roda contra um stack real. Com CADENCIA_E2E=1 o proprio Playwright
- * sobe api (com seed) e web; sem a flag, os testes sao pulados.
+ * E2E roda contra um stack real. Com CADENCIA_E2E=1 o próprio Playwright
+ * sobe api (com seed) e web; sem a flag, os testes são pulados.
  */
 export default defineConfig({
   testDir: "./e2e",

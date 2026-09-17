@@ -8,7 +8,7 @@ describe("parseTrelloToken", () => {
     expect(parseTrelloToken("#token=abc123&expiration=never")).toBe("abc123");
   });
 
-  it("retorna null quando nao ha token", () => {
+  it("retorna null quando não ha token", () => {
     expect(parseTrelloToken("")).toBeNull();
     expect(parseTrelloToken("#")).toBeNull();
     expect(parseTrelloToken("#foo=bar")).toBeNull();
@@ -17,7 +17,7 @@ describe("parseTrelloToken", () => {
 });
 
 describe("jobStateLabelKey", () => {
-  it("mapeia os estados de job para chaves de traducao", () => {
+  it("mapeia os estados de job para chaves de tradução", () => {
     expect(jobStateLabelKey("DONE")).toBe("integrations.done");
     expect(jobStateLabelKey("RUNNING")).toBe("integrations.running");
     expect(jobStateLabelKey("FAILED")).toBe("integrations.failed");

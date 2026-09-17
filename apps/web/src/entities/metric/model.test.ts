@@ -19,7 +19,7 @@ const burndown: Burndown = {
 };
 
 describe("toBurndownChart", () => {
-  it("converte as series para o formato de grafico", () => {
+  it("converte as séries para o formato de gráfico", () => {
     const rows = toBurndownChart(burndown, "pt-BR");
     expect(rows).toHaveLength(4);
     expect(rows[0]?.remaining).toBe(13);
@@ -36,7 +36,7 @@ describe("scopeChangeMarkers", () => {
     expect(markers[0]?.value).toBe(11);
   });
 
-  it("ignora datas fora da serie", () => {
+  it("ignora datas fora da série", () => {
     const markers = scopeChangeMarkers(
       { ...burndown, scope_changes: [{ date: "2026-01-01", delta: 5, kind: "added" }] },
       "pt-BR",

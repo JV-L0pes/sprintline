@@ -97,7 +97,7 @@ async def register(
             tokens.hash_opaque_token(payload.invite_token)
         )
         if invite is None:
-            raise NotFoundError("Convite nao encontrado", code="INVITE_NOT_FOUND")
+            raise NotFoundError("Convite não encontrado", code="INVITE_NOT_FOUND")
         invite.validate_for(user_email=payload.email, now=clock.now())
     elif settings.is_registration_invite_only:
         raise ForbiddenError(
@@ -173,7 +173,7 @@ async def refresh(
     )
     raw = request.cookies.get(request.app.state.settings.cookie_name)
     if not raw:
-        raise UnauthorizedError("Sessao ausente", code="SESSION_NOT_FOUND")
+        raise UnauthorizedError("Sessão ausente", code="SESSION_NOT_FOUND")
     rotator = RotateSession(
         SqlSessionRepository(session),
         SqlUserRepository(session),
@@ -183,7 +183,7 @@ async def refresh(
     try:
         session_view = await rotator.execute(raw)
     except UnauthorizedError as exc:
-        # Reuse detection revoga a familia antes de falhar: efeito de seguranca
+        # Reuse detection revoga a família antes de falhar: efeito de segurança
         # precisa ser durável mesmo com o rollback do Unit of Work.
         if exc.code == "SESSION_REUSE_DETECTED":
             await session.commit()

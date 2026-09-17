@@ -45,7 +45,7 @@ describe("sprint model", () => {
     expect(plannedSprints(sprints).map((item) => item.id)).toEqual(["3"]);
   });
 
-  it("seleciona a sprint padrao: ativa > concluida > planejada", () => {
+  it("seleciona a sprint padrão: ativa > concluída > planejada", () => {
     expect(defaultSprint(sprints)?.id).toBe("2");
     expect(defaultSprint([sprint("1", "COMPLETED", "2026-09-01")])?.id).toBe("1");
     expect(defaultSprint([sprint("3", "PLANNED", "2026-10-01")])?.id).toBe("3");

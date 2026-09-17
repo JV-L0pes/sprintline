@@ -37,10 +37,10 @@ def role_at_least(role: Role, minimum: Role) -> bool:
 def normalize_email(raw: str) -> str:
     email = raw.strip().lower()
     if "@" not in email or email.startswith("@") or email.endswith("@"):
-        raise ValidationError("Email invalido", code="INVALID_EMAIL")
+        raise ValidationError("Email inválido", code="INVALID_EMAIL")
     local, _, domain = email.partition("@")
     if not local or "." not in domain:
-        raise ValidationError("Email invalido", code="INVALID_EMAIL")
+        raise ValidationError("Email inválido", code="INVALID_EMAIL")
     return email
 
 
@@ -48,7 +48,7 @@ def slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode()
     slug = _SLUG_RE.sub("-", normalized.lower()).strip("-")
     if not slug:
-        raise ValidationError("Nome invalido para gerar identificador", code="INVALID_SLUG")
+        raise ValidationError("Nome inválido para gerar identificador", code="INVALID_SLUG")
     return slug[:64]
 
 
