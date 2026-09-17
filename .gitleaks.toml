@@ -1,0 +1,17 @@
+# Gitleaks config — https://github.com/gitleaks/gitleaks
+title = "Cadencia secret scanning"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documentation examples and local dev placeholders"
+paths = [
+  '''docs/.*\.md''',
+  '''.*\.example''',
+  '''apps/api/tests/.*''',
+]
+regexes = [
+  '''change-me''',
+  '''cadencia-dev-secret''',
+]

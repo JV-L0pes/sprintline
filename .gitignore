@@ -1,56 +1,42 @@
-# Dependências
+# Node
 node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
+dist/
+.turbo/
+coverage/
+*.tsbuildinfo
 
-# Arquivos de ambiente
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.import_linter_cache/
+
+# Env
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
-# Arquivos de build
-/dist
-/build
-/out
+# Data
+*.db
+*.sqlite3
+pgdata/
 
-# Arquivos de cache
-.cache/
-.npm/
-.yarn/
+# Test artifacts
+playwright-report/
+test-results/
+blob-report/
 
-# Arquivos do sistema
+# Logs
+*.log
+
+# Editors / OS
+.idea/
 .DS_Store
 Thumbs.db
-
-# Arquivos de IDE/Editor
-.idea/
-.vscode/
-*.swp
-*.swo
-*.sublime-workspace
-*.sublime-project
-
-# Arquivos de log
-*.log
-logs/
-debug.log
-
-# Arquivos temporários
-*.tmp
-*.temp
-.temp/
-tmp/
-
-# Arquivos de referência e desenvolvimento
-/reference/
-*.local.json
-config.local.js
-
-
-# Manter
-!reference/KNu8uvd6-es-abp.json
-
-EHabp
-
-js/credentials.js
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

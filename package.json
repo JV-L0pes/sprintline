@@ -1,20 +1,49 @@
 {
-  "name": "burndown-chart",
-  "version": "1.0.0",
-  "description": "Dashboard interativo de Burndown Chart para equipes de desenvolvimento ágil",
-  "main": "index.js",
-  "scripts": {
-    "start": "http-server -p 3000",
-    "build": "echo 'Build completed'",
-    "deploy": "gh-pages -d .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "cadencia",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cadencia — plataforma de tracking agil com kanban, metricas de sprint e integracao Jira",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20.19"
   },
-  "dependencies": {
-    "chart.js": "^4.4.1",
-    "aos": "^2.3.4"
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test:unit",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
+    "gen:api": "pnpm --filter @cadencia/web gen:api",
+    "web:dev": "pnpm --filter @cadencia/web dev",
+    "web:build": "pnpm --filter @cadencia/web build",
+    "api:dev": "uv run --directory apps/api uvicorn cadencia.main:app --reload --port 8000",
+    "api:seed": "uv run --directory apps/api python scripts/seed_demo.py",
+    "api:test": "uv run --directory apps/api pytest",
+    "api:quality": "uv run --directory apps/api ruff check . && uv run --directory apps/api mypy",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "gh-pages": "^6.1.1",
-    "http-server": "^14.1.1"
+    "@biomejs/biome": "^2.2.4",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "@eslint/js": "^9.21.0",
+    "eslint": "^9.21.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-playwright": "^2.2.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "turbo": "^2.5.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.24.0"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,json,jsonc,css}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   }
 }
