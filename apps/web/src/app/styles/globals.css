@@ -1,0 +1,134 @@
+@import "tailwindcss";
+/* wdth.css traz os eixos wght + wdth (fonte variavel completa do Archivo). */
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/martian-mono";
+@import "./ink.css";
+
+/*
+  Ink: a tipografia carrega a pagina; a cor e racionada ao eixo de valor.
+  Uma unica cor viva, o ouro, reservada a status (sprint ativa, WIP estourado,
+  resultado). Zero gradientes, zero sombras, raio 0.
+*/
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --paper: #fbfbf9;
+  --ink: #0d0d0c;
+  --ash: #75736d;
+  --rule: #dfddd6;
+  --gold: #8a6b00;
+  --gold-fill: #f3ca4d;
+  --gold-invert: #f3ca4d;
+  --hover-bg: #f5f4f0;
+  --danger: #a33a2e;
+  --ease: cubic-bezier(0.76, 0, 0.24, 1);
+  --soft: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --paper: #0d0d0c;
+  --ink: #f4f3ef;
+  --ash: #918e86;
+  --rule: #2b2b27;
+  --gold: #f3ca4d;
+  --gold-invert: #8a6b00;
+  --hover-bg: #171715;
+  --danger: #e08a7d;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ash: var(--ash);
+  --color-rule: var(--rule);
+  --color-gold: var(--gold);
+  --color-gold-fill: var(--gold-fill);
+  --color-gold-invert: var(--gold-invert);
+  --color-hover: var(--hover-bg);
+  --color-danger: var(--danger);
+  --font-display: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  --font-mono: "Martian Mono Variable", "Martian Mono", ui-monospace, monospace;
+  --ease-editorial: var(--ease);
+  --ease-soft: var(--soft);
+  --breakpoint-xs: 500px;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: hidden;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 800;
+    line-height: 0.86;
+    letter-spacing: -0.045em;
+    font-variation-settings: "wdth" 112;
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--gold-fill);
+    color: #0d0d0c;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://sprintline-api.vercel.app/api/:path*"
+    },
+    { "source": "/((?!assets/).*)", "destination": "/index.html" }
+  ]
+}
