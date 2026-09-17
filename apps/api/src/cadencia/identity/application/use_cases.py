@@ -1,0 +1,331 @@
+"""Casos de uso do contexto identity."""
+
+from __future__ import annotations
+
+import uuid
+
+from cadencia.identity.application.dto import (
+    InviteView,
+    MemberView,
+    SessionView,
+    TokenPair,
+    UserView,
+    WorkspaceView,
+)
+from cadencia.identity.application.ports import PasswordHasher, TokenIssuer
+from cadencia.identity.domain.entities import (
+    Invite,
+    Membership,
+    Organization,
+    Session,
+    User,
+    Workspace,
+    new_family_id,
+)
+from cadencia.identity.domain.repositories import (
+    InviteRepository,
+    MembershipRepository,
+    MembershipWithUser,
+    OrganizationRepository,
+    SessionRepository,
+    UserRepository,
+    WorkspaceRepository,
+    WorkspaceWithRole,
+)
+from cadencia.identity.domain.value_objects import (
+    PASSWORD_MIN_LENGTH,
+    Role,
+    role_at_least,
+    slugify,
+)
+from cadencia.shared.clock import Clock
+from cadencia.shared.errors import (
+    ConflictError,
+    ForbiddenError,
+    NotFoundError,
+    UnauthorizedError,
+    ValidationError,
+)
+
+
+def user_view(user: User) -> UserView:
+    return UserView(id=user.id, email=user.email, name=user.name, locale=user.locale)
+
+
+def workspace_view(workspace: Workspace, role: Role) -> WorkspaceView:
+    return WorkspaceView(
+        id=workspace.id,
+        name=workspace.name,
+        slug=workspace.slug,
+        timezone=workspace.timezone,
+        role=role,
+    )
+
+
+def member_view(entry: MembershipWithUser) -> MemberView:
+    return MemberView(
+        user_id=entry.user.id,
+        name=entry.user.name,
+        email=entry.user.email,
+        role=entry.membership.role,
+        joined_at=entry.membership.created_at,
+    )
+
+
+class RegisterUser:
+    def __init__(self, users: UserRepository, hasher: PasswordHasher, clock: Clock) -> None:
+        self._users = users
+        self._hasher = hasher
+        self._clock = clock
+
+    async def execute(self, *, email: str, name: str, password: str, locale: str) -> User:
+        if len(password) < PASSWORD_MIN_LENGTH:
+            raise ValidationError(
+                f"Senha deve ter ao menos {PASSWORD_MIN_LENGTH} caracteres",
+                code="WEAK_PASSWORD",
+            )
+        if await self._users.find_by_email(email.strip().lower()) is not None:
+            raise ConflictError("Email ja cadastrado", code="EMAIL_ALREADY_REGISTERED")
+        user = User.register(
+            email=email,
+            name=name,
+            password_hash=self._hasher.hash(password),
+            locale=locale,
+            now=self._clock.now(),
+        )
+        await self._users.add(user)
+        return user
+
+
+class AuthenticateUser:
+    def __init__(self, users: UserRepository, hasher: PasswordHasher) -> None:
+        self._users = users
+        self._hasher = hasher
+
+    async def execute(self, *, email: str, password: str) -> User:
+        user = await self._users.find_by_email(email.strip().lower())
+        if user is None or not self._hasher.verify(user.password_hash, password):
+            raise UnauthorizedError("Credenciais invalidas", code="INVALID_CREDENTIALS")
+        return user
+
+
+class StartSession:
+    def __init__(self, sessions: SessionRepository, tokens: TokenIssuer, clock: Clock) -> None:
+        self._sessions = sessions
+        self._tokens = tokens
+        self._clock = clock
+
+    async def execute(self, user: User) -> SessionView:
+        now = self._clock.now()
+        access_token, access_expires_at = self._tokens.create_access(user.id, now)
+        raw_refresh = self._tokens.generate_opaque_token()
+        ttl = self._tokens.refresh_ttl()
+        session = Session.issue(
+            user_id=user.id,
+            token_hash=self._tokens.hash_opaque_token(raw_refresh),
+            family_id=new_family_id(),
+            ttl_days=int(ttl.days),
+            now=now,
+        )
+        await self._sessions.add(session)
+        return SessionView(
+            user=user_view(user),
+            tokens=TokenPair(
+                access_token=access_token,
+                access_expires_at=access_expires_at,
+                refresh_token=raw_refresh,
+                refresh_expires_at=session.expires_at,
+            ),
+        )
+
+
+class RotateSession:
+    def __init__(
+        self,
+        sessions: SessionRepository,
+        users: UserRepository,
+        tokens: TokenIssuer,
+        clock: Clock,
+    ) -> None:
+        self._sessions = sessions
+        self._users = users
+        self._tokens = tokens
+        self._clock = clock
+
+    async def execute(self, raw_refresh: str) -> SessionView:
+        now = self._clock.now()
+        token_hash = self._tokens.hash_opaque_token(raw_refresh)
+        session = await self._sessions.find_by_token_hash(token_hash)
+        if session is None:
+            raise UnauthorizedError("Sessao invalida", code="SESSION_NOT_FOUND")
+        if session.is_revoked:
+            await self._sessions.revoke_family(session.family_id, now)
+            raise UnauthorizedError(
+                "Reuso de token detectado; sessao revogada", code="SESSION_REUSE_DETECTED"
+            )
+        session.ensure_active(now)
+        session.revoke(now)
+        await self._sessions.save(session)
+
+        user = await self._users.get(session.user_id)
+        if user is None:
+            raise UnauthorizedError("Usuario nao encontrado", code="SESSION_USER_MISSING")
+
+        access_token, access_expires_at = self._tokens.create_access(user.id, now)
+        raw_new = self._tokens.generate_opaque_token()
+        ttl_days = int(self._tokens.refresh_ttl().days)
+        new_session = Session.issue(
+            user_id=user.id,
+            token_hash=self._tokens.hash_opaque_token(raw_new),
+            family_id=session.family_id,
+            ttl_days=ttl_days,
+            now=now,
+        )
+        await self._sessions.add(new_session)
+        return SessionView(
+            user=user_view(user),
+            tokens=TokenPair(
+                access_token=access_token,
+                access_expires_at=access_expires_at,
+                refresh_token=raw_new,
+                refresh_expires_at=new_session.expires_at,
+            ),
+        )
+
+
+class EndSession:
+    def __init__(self, sessions: SessionRepository, tokens: TokenIssuer, clock: Clock) -> None:
+        self._sessions = sessions
+        self._tokens = tokens
+        self._clock = clock
+
+    async def execute(self, raw_refresh: str) -> None:
+        session = await self._sessions.find_by_token_hash(
+            self._tokens.hash_opaque_token(raw_refresh)
+        )
+        if session is not None:
+            await self._sessions.revoke_family(session.family_id, self._clock.now())
+
+
+class CreateWorkspace:
+    def __init__(
+        self,
+        organizations: OrganizationRepository,
+        workspaces: WorkspaceRepository,
+        memberships: MembershipRepository,
+        clock: Clock,
+    ) -> None:
+        self._organizations = organizations
+        self._workspaces = workspaces
+        self._memberships = memberships
+        self._clock = clock
+
+    async def execute(self, *, user: User, name: str, timezone: str) -> WorkspaceView:
+        now = self._clock.now()
+        organization = Organization(name=name, slug=slugify(name), created_at=now)
+        await self._organizations.add(organization)
+        workspace = Workspace.create(
+            organization_id=organization.id, name=name, timezone=timezone, now=now
+        )
+        if await self._workspaces.find_by_slug(workspace.slug) is not None:
+            raise ConflictError("Ja existe um workspace com este nome", code="WORKSPACE_EXISTS")
+        await self._workspaces.add(workspace)
+        membership = Membership.join(
+            workspace_id=workspace.id, user_id=user.id, role=Role.OWNER, now=now
+        )
+        await self._memberships.add(membership)
+        return workspace_view(workspace, Role.OWNER)
+
+
+class ListWorkspaces:
+    def __init__(self, workspaces: WorkspaceRepository) -> None:
+        self._workspaces = workspaces
+
+    async def execute(self, user_id: uuid.UUID) -> list[WorkspaceView]:
+        entries: list[WorkspaceWithRole] = await self._workspaces.list_for_user(user_id)
+        return [workspace_view(entry.workspace, entry.role) for entry in entries]
+
+
+class ListMembers:
+    def __init__(self, memberships: MembershipRepository) -> None:
+        self._memberships = memberships
+
+    async def execute(self, workspace_id: uuid.UUID) -> list[MemberView]:
+        entries = await self._memberships.list_for_workspace(workspace_id)
+        return [member_view(entry) for entry in entries]
+
+
+class InviteMember:
+    def __init__(
+        self,
+        invites: InviteRepository,
+        memberships: MembershipRepository,
+        users: UserRepository,
+        tokens: TokenIssuer,
+        clock: Clock,
+    ) -> None:
+        self._invites = invites
+        self._memberships = memberships
+        self._users = users
+        self._tokens = tokens
+        self._clock = clock
+
+    async def execute(
+        self,
+        *,
+        actor_role: Role,
+        workspace_id: uuid.UUID,
+        email: str,
+        role: Role,
+    ) -> InviteView:
+        if not role_at_least(actor_role, role):
+            raise ForbiddenError(
+                "Nao e possivel convidar com papel superior ao seu", code="ROLE_ESCALATION"
+            )
+        existing_user = await self._users.find_by_email(email.strip().lower())
+        if existing_user is not None:
+            membership = await self._memberships.get(workspace_id, existing_user.id)
+            if membership is not None:
+                raise ConflictError("Usuario ja e membro do workspace", code="ALREADY_MEMBER")
+        now = self._clock.now()
+        raw_token = self._tokens.generate_opaque_token()
+        invite = Invite.issue(
+            workspace_id=workspace_id, email=email, role=role, raw_token=raw_token, now=now
+        )
+        await self._invites.add(invite)
+        return InviteView(invite_id=invite.id, token=raw_token, expires_at=invite.expires_at)
+
+
+class AcceptInvite:
+    def __init__(
+        self,
+        invites: InviteRepository,
+        memberships: MembershipRepository,
+        workspaces: WorkspaceRepository,
+        tokens: TokenIssuer,
+        clock: Clock,
+    ) -> None:
+        self._invites = invites
+        self._memberships = memberships
+        self._workspaces = workspaces
+        self._tokens = tokens
+        self._clock = clock
+
+    async def execute(self, *, token: str, user: User) -> WorkspaceView:
+        now = self._clock.now()
+        invite = await self._invites.find_by_token_hash(self._tokens.hash_opaque_token(token))
+        if invite is None:
+            raise NotFoundError("Convite nao encontrado", code="INVITE_NOT_FOUND")
+        invite.accept(user_email=user.email, now=now)
+        existing = await self._memberships.get(invite.workspace_id, user.id)
+        if existing is not None:
+            raise ConflictError("Usuario ja e membro do workspace", code="ALREADY_MEMBER")
+        membership = Membership.join(
+            workspace_id=invite.workspace_id, user_id=user.id, role=invite.role, now=now
+        )
+        await self._memberships.add(membership)
+        await self._invites.save(invite)
+        workspace = await self._workspaces.get(invite.workspace_id)
+        if workspace is None:
+            raise NotFoundError("Workspace nao encontrado", code="WORKSPACE_NOT_FOUND")
+        return workspace_view(workspace, invite.role)

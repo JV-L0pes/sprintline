@@ -1,0 +1,66 @@
+"""Portas de persistencia do contexto identity."""
+
+from __future__ import annotations
+
+import uuid
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Protocol
+
+from cadencia.identity.domain.entities import (
+    Invite,
+    Membership,
+    Organization,
+    Session,
+    User,
+    Workspace,
+)
+from cadencia.identity.domain.value_objects import Role
+
+
+@dataclass(frozen=True)
+class WorkspaceWithRole:
+    workspace: Workspace
+    role: Role
+
+
+@dataclass(frozen=True)
+class MembershipWithUser:
+    membership: Membership
+    user: User
+
+
+class UserRepository(Protocol):
+    async def get(self, user_id: uuid.UUID) -> User | None: ...
+    async def find_by_email(self, email: str) -> User | None: ...
+    async def add(self, user: User) -> None: ...
+
+
+class OrganizationRepository(Protocol):
+    async def add(self, organization: Organization) -> None: ...
+
+
+class WorkspaceRepository(Protocol):
+    async def get(self, workspace_id: uuid.UUID) -> Workspace | None: ...
+    async def find_by_slug(self, slug: str) -> Workspace | None: ...
+    async def list_for_user(self, user_id: uuid.UUID) -> list[WorkspaceWithRole]: ...
+    async def add(self, workspace: Workspace) -> None: ...
+
+
+class MembershipRepository(Protocol):
+    async def get(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> Membership | None: ...
+    async def list_for_workspace(self, workspace_id: uuid.UUID) -> list[MembershipWithUser]: ...
+    async def add(self, membership: Membership) -> None: ...
+
+
+class InviteRepository(Protocol):
+    async def find_by_token_hash(self, token_hash: str) -> Invite | None: ...
+    async def add(self, invite: Invite) -> None: ...
+    async def save(self, invite: Invite) -> None: ...
+
+
+class SessionRepository(Protocol):
+    async def find_by_token_hash(self, token_hash: str) -> Session | None: ...
+    async def add(self, session: Session) -> None: ...
+    async def save(self, session: Session) -> None: ...
+    async def revoke_family(self, family_id: uuid.UUID, now: datetime) -> None: ...

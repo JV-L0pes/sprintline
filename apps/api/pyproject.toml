@@ -1,0 +1,199 @@
+[project]
+name = "cadencia-api"
+version = "0.1.0"
+description = "Cadencia API — kanban, sprints, metricas ageis e integracao Jira"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115.6",
+  "uvicorn[standard]>=0.34.0",
+  "sqlalchemy[asyncio]>=2.0.37",
+  "asyncpg>=0.30.0",
+  "aiosqlite>=0.20.0",
+  "alembic>=1.14.0",
+  "pydantic>=2.10.0",
+  "pydantic-settings>=2.7.0",
+  "tzdata>=2025.1",
+  "email-validator>=2.2.0",
+  "pyjwt>=2.10.0",
+  "argon2-cffi>=23.1.0",
+  "cryptography>=44.0.0",
+  "httpx>=0.28.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.0",
+  "pytest-asyncio>=0.25.0",
+  "pytest-cov>=6.0.0",
+  "hypothesis>=6.123.0",
+  "time-machine>=2.16.0",
+  "respx>=0.22.0",
+  "ruff>=0.9.0",
+  "mypy>=1.14.0",
+  "import-linter>=2.3.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cadencia"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "scripts"]
+exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "W",
+  "I",
+  "N",
+  "UP",
+  "B",
+  "C4",
+  "SIM",
+  "S",
+  "PT",
+  "RUF",
+  "ARG",
+  "TID",
+]
+ignore = [
+  "S101",
+  "B008",
+  "RUF012",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "ARG", "PT011", "PT012"]
+"scripts/**" = ["S", "T201", "ARG"]
+"src/cadencia/platform/config.py" = ["S105", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cadencia"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+files = ["src/cadencia"]
+exclude = ["src/cadencia/.*/infrastructure/.*", "src/cadencia/.*/interface/.*", "src/cadencia/platform/.*"]
+strict = true
+warn_unreachable = true
+disallow_any_generics = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+  "cadencia.*.infrastructure.*",
+  "cadencia.*.interface.*",
+  "cadencia.platform.*",
+  "cadencia.main",
+]
+check_untyped_defs = true
+disallow_untyped_defs = false
+strict = false
+
+[[tool.mypy.overrides]]
+module = ["cadencia.work.interface.schemas", "cadencia.metrics.interface.schemas"]
+disable_error_code = ["call-arg"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = [".", "src"]
+addopts = "-q --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+branch = true
+source = ["src/cadencia"]
+omit = ["src/cadencia/main.py", "*/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+]
+
+[tool.importlinter]
+root_packages = ["cadencia"]
+
+[[tool.importlinter.contracts]]
+name = "shared e platform nao dependem de contexts"
+type = "forbidden"
+source_modules = ["cadencia.shared", "cadencia.platform"]
+forbidden_modules = [
+  "cadencia.identity",
+  "cadencia.work",
+  "cadencia.metrics",
+  "cadencia.integrations",
+]
+
+[[tool.importlinter.contracts]]
+name = "dominio de cada context nao importa infraestrutura, interface ou outros contexts"
+type = "forbidden"
+source_modules = [
+  "cadencia.identity.domain",
+  "cadencia.work.domain",
+  "cadencia.metrics.domain",
+  "cadencia.integrations.domain",
+]
+forbidden_modules = [
+  "cadencia.identity.infrastructure",
+  "cadencia.identity.interface",
+  "cadencia.identity.application",
+  "cadencia.work.infrastructure",
+  "cadencia.work.interface",
+  "cadencia.work.application",
+  "cadencia.metrics.infrastructure",
+  "cadencia.metrics.interface",
+  "cadencia.metrics.application",
+  "cadencia.integrations.infrastructure",
+  "cadencia.integrations.interface",
+  "cadencia.integrations.application",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "apenas o deps de identity pode ser importado entre contexts (autenticacao e tenancy)"
+type = "forbidden"
+source_modules = ["cadencia.work", "cadencia.integrations"]
+forbidden_modules = [
+  "cadencia.identity.domain.entities",
+  "cadencia.identity.domain.repositories",
+  "cadencia.identity.application",
+  "cadencia.identity.infrastructure",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "metrics domain/application nao dependem de outros contexts (leitura fica na infra)"
+type = "forbidden"
+source_modules = ["cadencia.metrics.domain", "cadencia.metrics.application"]
+forbidden_modules = [
+  "cadencia.identity.domain",
+  "cadencia.identity.application",
+  "cadencia.identity.infrastructure",
+  "cadencia.identity.interface",
+  "cadencia.work.domain.entities",
+  "cadencia.work.domain.policies",
+  "cadencia.work.domain.repositories",
+  "cadencia.work.application",
+  "cadencia.work.infrastructure",
+  "cadencia.work.interface",
+  "cadencia.integrations",
+]
+allow_indirect_imports = true

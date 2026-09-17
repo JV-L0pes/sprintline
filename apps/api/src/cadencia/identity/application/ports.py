@@ -1,0 +1,19 @@
+"""Portas de servicos de seguranca — implementadas na infraestrutura."""
+
+from __future__ import annotations
+
+import uuid
+from datetime import datetime, timedelta
+from typing import Protocol
+
+
+class PasswordHasher(Protocol):
+    def hash(self, password: str) -> str: ...
+    def verify(self, password_hash: str, password: str) -> bool: ...
+
+
+class TokenIssuer(Protocol):
+    def create_access(self, user_id: uuid.UUID, now: datetime) -> tuple[str, datetime]: ...
+    def generate_opaque_token(self) -> str: ...
+    def hash_opaque_token(self, raw: str) -> str: ...
+    def refresh_ttl(self) -> timedelta: ...
