@@ -8,11 +8,11 @@
     "node": ">=20.19"
   },
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
-    "test": "turbo run test:unit",
+    "dev": "pnpm --filter @cadencia/web dev",
+    "build": "pnpm --filter @cadencia/web build",
+    "lint": "pnpm --filter @cadencia/web lint",
+    "typecheck": "pnpm --filter @cadencia/web exec tsc -b --noEmit",
+    "test": "pnpm --filter @cadencia/web test:unit",
     "format": "biome format --write .",
     "check": "biome check --write .",
     "gen:api": "pnpm --filter @cadencia/web gen:api",
@@ -37,7 +37,6 @@
     "globals": "^15.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
-    "turbo": "^2.5.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.24.0"
   },

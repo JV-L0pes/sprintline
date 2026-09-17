@@ -300,7 +300,7 @@ agile-tracker/
 └── README.md
 ```
 
-**Gerenciadores**: `pnpm` (workspaces) + `Turborepo` (cache/orquestração) no lado JS; `uv` (lockfile `uv.lock`) no lado Python. Comandos cross-platform (Windows-friendly) via scripts pnpm.
+**Gerenciadores**: `pnpm` workspaces no lado JS (Turborepo foi avaliado e removido — ver ADR 0001); `uv` (lockfile `uv.lock`) no lado Python. Comandos cross-platform (Windows-friendly) via scripts pnpm.
 
 ### 5.3 Backend — monolito modular + DDD
 
@@ -728,7 +728,7 @@ Demo pública seedada, README bilíngue (PT/EN), case study no padrão do portf�
 
 | ADR | Título |
 |---|---|
-| 0001 | Monorepo com pnpm + Turborepo e monolito modular |
+| 0001 | Monorepo com pnpm workspaces e monolito modular |
 | 0002 | DDD com bounded contexts e event log append-only como fonte de métricas |
 | 0003 | FSD no frontend + dependency-cruiser como guardião de fronteiras |
 | 0004 | Design system "Ink" (Tailwind v4 + shadcn) e ouro racionado |

@@ -6,7 +6,9 @@
 
 ## Decisão
 
-Adotar um monorepo (`pnpm` workspaces + Turborepo) com dois apps — `apps/web` (React/Vite) e `apps/api` (FastAPI) — e o backend como **monolito modular**: um único deploy, fronteiras de bounded context enforceadas por `import-linter` no CI.
+Adotar um monorepo (`pnpm` workspaces) com dois apps — `apps/web` (React/Vite) e `apps/api` (FastAPI) — e o backend como **monolito modular**: um único deploy, fronteiras de bounded context enforceadas por `import-linter` no CI.
+
+> Nota (2026-09-17): o Turborepo foi removido. A Vercel o detectava no build via Git e substituía os comandos do projeto Python (`turbo run build`), quebrando a instalação das dependências; com um único app JS, o ganho de cache era marginal. Os scripts da raiz usam `pnpm --filter` diretamente.
 
 ## Consequências
 
