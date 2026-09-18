@@ -51,7 +51,9 @@ export const pt = {
     create: "Novo workspace",
     createTitle: "Criar workspace",
     name: "Nome",
-    timezone: "Fuso horario",
+    timezone: "Fuso horário",
+    timezoneHint:
+      "Define o calendário das métricas: quando o dia de uma sprint termina e quais dias são úteis.",
     empty: "Você ainda não tem um workspace",
     emptyHint: "Crie um workspace para começar a planejar sprints.",
     settings: "Configurações",
@@ -363,6 +365,8 @@ export const en: DeepMessages = {
     createTitle: "Create workspace",
     name: "Name",
     timezone: "Timezone",
+    timezoneHint:
+      "Sets the metrics calendar: when a sprint day ends and which days are working days.",
     empty: "You don't have a workspace yet",
     emptyHint: "Create a workspace to start planning sprints.",
     settings: "Settings",

@@ -1,12 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useCreateWorkspace } from "@/entities/workspace/api";
+import { detectTimezone, timezoneOptions } from "@/features/workspace/model";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
 import { Dialog } from "@/shared/ui/dialog";
-import { Field, Input } from "@/shared/ui/input";
+import { Field, Input, Select } from "@/shared/ui/input";
 import { useToast } from "@/shared/ui/toast";
 
 const schema = z.object({
@@ -21,9 +23,11 @@ export function CreateWorkspaceDialog({ open, onClose }: { open: boolean; onClos
   const toast = useToast();
   const navigate = useNavigate();
   const createWorkspace = useCreateWorkspace();
+  const detected = useMemo(detectTimezone, []);
+  const timezoneChoices = useMemo(() => timezoneOptions(detected), [detected]);
   const form = useForm<WorkspaceValues>({
     resolver: zodResolver(schema),
-    values: { name: "", timezone: "America/Sao_Paulo" },
+    values: { name: "", timezone: detected },
   });
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -65,9 +69,15 @@ export function CreateWorkspaceDialog({ open, onClose }: { open: boolean; onClos
         <Field
           label={t("workspace.timezone")}
           htmlFor="workspace-timezone"
-          hint="America/Sao_Paulo"
+          hint={t("workspace.timezoneHint")}
         >
-          <Input id="workspace-timezone" {...form.register("timezone")} />
+          <Select id="workspace-timezone" {...form.register("timezone")}>
+            {timezoneChoices.map(([value, label]) => (
+              <option key={value} value={value}>
+                {value === label ? value : `${label} — ${value}`}
+              </option>
+            ))}
+          </Select>
         </Field>
       </form>
     </Dialog>
