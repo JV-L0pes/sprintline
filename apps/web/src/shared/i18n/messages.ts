@@ -31,7 +31,7 @@ export const pt = {
     noAccount: "Ainda não tem conta?",
     hasAccount: "Já tem conta?",
     passwordHint: "Mínimo de 10 caracteres.",
-    inviteOnly: "Registro apenas por convite. Peca um link a um administrador.",
+    inviteOnly: "Registro apenas por convite. Peça um link a um administrador.",
     currentPassword: "Senha atual",
     newPassword: "Nova senha",
     changePassword: "Alterar minha senha",
