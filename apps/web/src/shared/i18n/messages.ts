@@ -16,6 +16,8 @@ export const pt = {
     optional: "opcional",
     required: "obrigatório",
     today: "hoje",
+    delete: "Excluir",
+    archive: "Arquivar",
   },
   auth: {
     signIn: "Entrar",
@@ -54,6 +56,12 @@ export const pt = {
     emptyHint: "Crie um workspace para começar a planejar sprints.",
     settings: "Configurações",
     members: "Membros",
+    open: "Abrir workspace",
+    deleteTitle: "Excluir workspace",
+    deleteHint:
+      "Apaga o workspace e tudo que há dentro dele: projetos, itens, sprints, eventos e integrações. Não há como desfazer.",
+    deleteTypeName: "Digite o nome do workspace para confirmar",
+    deleted: "Workspace excluído.",
   },
   project: {
     label: "Projeto",
@@ -66,6 +74,11 @@ export const pt = {
     emptyHint: "Crie o primeiro projeto para abrir o board.",
     points: "Pontos",
     count: "Contagem",
+    open: "Abrir projeto",
+    archiveTitle: "Arquivar projeto",
+    archiveHint:
+      "O projeto sai das listas, mas itens, sprints e histórico de eventos permanecem salvos e recuperáveis.",
+    archived: "Projeto arquivado.",
   },
   board: {
     title: "Board",
@@ -109,6 +122,9 @@ export const pt = {
     noEstimate: "sem estimativa",
     newItem: "Novo item",
     editItem: "Editar item",
+    archiveTitle: "Arquivar item",
+    archiveHint: "O item sai do board e do backlog. O histórico é preservado.",
+    archived: "Item arquivado.",
     lowest: "Mínima",
     low: "Baixa",
     medium: "Média",
@@ -311,6 +327,8 @@ export const en: DeepMessages = {
     optional: "optional",
     required: "required",
     today: "today",
+    delete: "Delete",
+    archive: "Archive",
   },
   auth: {
     signIn: "Sign in",
@@ -349,6 +367,12 @@ export const en: DeepMessages = {
     emptyHint: "Create a workspace to start planning sprints.",
     settings: "Settings",
     members: "Members",
+    open: "Open workspace",
+    deleteTitle: "Delete workspace",
+    deleteHint:
+      "Deletes the workspace and everything inside it: projects, items, sprints, events and integrations. This cannot be undone.",
+    deleteTypeName: "Type the workspace name to confirm",
+    deleted: "Workspace deleted.",
   },
   project: {
     label: "Project",
@@ -361,6 +385,11 @@ export const en: DeepMessages = {
     emptyHint: "Create your first project to open the board.",
     points: "Points",
     count: "Count",
+    open: "Open project",
+    archiveTitle: "Archive project",
+    archiveHint:
+      "The project leaves the lists, but items, sprints and event history stay saved and recoverable.",
+    archived: "Project archived.",
   },
   board: {
     title: "Board",
@@ -403,6 +432,9 @@ export const en: DeepMessages = {
     noEstimate: "no estimate",
     newItem: "New item",
     editItem: "Edit item",
+    archiveTitle: "Archive item",
+    archiveHint: "The item leaves the board and the backlog. History is preserved.",
+    archived: "Item archived.",
     lowest: "Lowest",
     low: "Low",
     medium: "Medium",

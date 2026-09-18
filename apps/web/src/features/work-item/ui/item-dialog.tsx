@@ -1,7 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useAssignItemToSprint, useCreateItem, useUpdateItem } from "@/entities/work-item/api";
+import {
+  useArchiveItem,
+  useAssignItemToSprint,
+  useCreateItem,
+  useUpdateItem,
+} from "@/entities/work-item/api";
 import {
   PRIORITIES,
   priorityLabelKey,
@@ -11,7 +17,7 @@ import {
 import type { Sprint, WorkItem } from "@/shared/api/types";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
-import { Dialog } from "@/shared/ui/dialog";
+import { ConfirmDialog, Dialog } from "@/shared/ui/dialog";
 import { Field, Input, Select, Textarea } from "@/shared/ui/input";
 import { useToast } from "@/shared/ui/toast";
 
@@ -51,6 +57,8 @@ export function ItemDialog({
   const createItem = useCreateItem(workspaceId, projectId);
   const updateItem = useUpdateItem(workspaceId, projectId);
   const assignSprint = useAssignItemToSprint(workspaceId, projectId);
+  const archiveItem = useArchiveItem(workspaceId, projectId);
+  const [confirmingArchive, setConfirmingArchive] = useState(false);
 
   const form = useForm<ItemValues>({
     resolver: zodResolver(schema),
@@ -108,91 +116,129 @@ export function ItemDialog({
   });
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title={item ? t("item.editItem") : t("item.newItem")}
-      footer={
-        <>
-          <button type="button" className="plain" onClick={onClose}>
-            {t("common.cancel")}
-          </button>
-          <Button
-            type="submit"
-            form="item-form"
-            disabled={createItem.isPending || updateItem.isPending}
-          >
-            {t("common.save")}
-          </Button>
-        </>
-      }
-    >
-      <form
-        id="item-form"
-        onSubmit={(event) => void onSubmit(event)}
-        className="grid gap-4"
-        noValidate
+    <>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        title={item ? t("item.editItem") : t("item.newItem")}
+        footer={
+          <>
+            {item ? (
+              <button
+                type="button"
+                className="plain mr-auto text-danger"
+                onClick={() => {
+                  setConfirmingArchive(true);
+                }}
+              >
+                {t("common.archive")}
+              </button>
+            ) : null}
+            <button type="button" className="plain" onClick={onClose}>
+              {t("common.cancel")}
+            </button>
+            <Button
+              type="submit"
+              form="item-form"
+              disabled={createItem.isPending || updateItem.isPending}
+            >
+              {t("common.save")}
+            </Button>
+          </>
+        }
       >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("item.type")} htmlFor="item-type">
-            <Select id="item-type" {...form.register("type")} disabled={Boolean(item)}>
-              {WORK_ITEM_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {t(typeLabelKey(type))}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label={t("item.priority")} htmlFor="item-priority">
-            <Select id="item-priority" {...form.register("priority")}>
-              {PRIORITIES.map((priority) => (
-                <option key={priority} value={priority}>
-                  {t(priorityLabelKey(priority))}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
-        <Field
-          label={t("item.title")}
-          htmlFor="item-title"
-          error={form.formState.errors.title ? t("errors.REQUEST_VALIDATION_ERROR") : undefined}
+        <form
+          id="item-form"
+          onSubmit={(event) => void onSubmit(event)}
+          className="grid gap-4"
+          noValidate
         >
-          <Input id="item-title" {...form.register("title")} />
-        </Field>
-        <Field label={t("item.description")} htmlFor="item-description">
-          <Textarea id="item-description" rows={4} {...form.register("description")} />
-        </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("item.points")} htmlFor="item-points" hint={t("item.pointsHint")}>
-            <Select id="item-points" {...form.register("story_points")}>
-              <option value="">{t("item.noEstimate")}</option>
-              {FIBONACCI.map((points) => (
-                <option key={points} value={points}>
-                  {points}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label={t("item.dueDate")} htmlFor="item-due">
-            <Input id="item-due" type="date" {...form.register("due_date")} />
-          </Field>
-        </div>
-        {sprints !== undefined ? (
-          <Field label={t("item.sprint")} htmlFor="item-sprint">
-            <Select id="item-sprint" {...form.register("sprint_id")}>
-              <option value="">{t("item.noSprint")}</option>
-              {sprints
-                .filter((sprint) => sprint.state !== "COMPLETED")
-                .map((sprint) => (
-                  <option key={sprint.id} value={sprint.id}>
-                    {sprint.name} · {t(`sprint.${sprint.state.toLowerCase()}`)}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("item.type")} htmlFor="item-type">
+              <Select id="item-type" {...form.register("type")} disabled={Boolean(item)}>
+                {WORK_ITEM_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {t(typeLabelKey(type))}
                   </option>
                 ))}
-            </Select>
+              </Select>
+            </Field>
+            <Field label={t("item.priority")} htmlFor="item-priority">
+              <Select id="item-priority" {...form.register("priority")}>
+                {PRIORITIES.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {t(priorityLabelKey(priority))}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+          <Field
+            label={t("item.title")}
+            htmlFor="item-title"
+            error={form.formState.errors.title ? t("errors.REQUEST_VALIDATION_ERROR") : undefined}
+          >
+            <Input id="item-title" {...form.register("title")} />
           </Field>
-        ) : null}
-      </form>
-    </Dialog>
+          <Field label={t("item.description")} htmlFor="item-description">
+            <Textarea id="item-description" rows={4} {...form.register("description")} />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("item.points")} htmlFor="item-points" hint={t("item.pointsHint")}>
+              <Select id="item-points" {...form.register("story_points")}>
+                <option value="">{t("item.noEstimate")}</option>
+                {FIBONACCI.map((points) => (
+                  <option key={points} value={points}>
+                    {points}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t("item.dueDate")} htmlFor="item-due">
+              <Input id="item-due" type="date" {...form.register("due_date")} />
+            </Field>
+          </div>
+          {sprints !== undefined ? (
+            <Field label={t("item.sprint")} htmlFor="item-sprint">
+              <Select id="item-sprint" {...form.register("sprint_id")}>
+                <option value="">{t("item.noSprint")}</option>
+                {sprints
+                  .filter((sprint) => sprint.state !== "COMPLETED")
+                  .map((sprint) => (
+                    <option key={sprint.id} value={sprint.id}>
+                      {sprint.name} · {t(`sprint.${sprint.state.toLowerCase()}`)}
+                    </option>
+                  ))}
+              </Select>
+            </Field>
+          ) : null}
+        </form>
+      </Dialog>
+      <ConfirmDialog
+        open={confirmingArchive && item !== null && item !== undefined}
+        onClose={() => {
+          setConfirmingArchive(false);
+        }}
+        onConfirm={() => {
+          if (!item) {
+            return;
+          }
+          void archiveItem
+            .mutateAsync(item.id)
+            .then(() => {
+              toast.push(t("item.archived"));
+              setConfirmingArchive(false);
+              onClose();
+            })
+            .catch((error: unknown) => {
+              toast.pushError(error);
+            });
+        }}
+        title={t("item.archiveTitle")}
+        description={t("item.archiveHint")}
+        confirmLabel={t("common.archive")}
+        pending={archiveItem.isPending}
+      />
+    </>
   );
 }

@@ -100,6 +100,22 @@ export function useMoveItem(workspaceId: string, projectId: string) {
   });
 }
 
+export function useArchiveItem(workspaceId: string, projectId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (itemId: string) =>
+      apiRequest(`/api/v1/workspaces/${workspaceId}/items/${itemId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: queryKeys.board(workspaceId, projectId) }),
+        client.invalidateQueries({ queryKey: queryKeys.items(workspaceId, projectId) }),
+      ]);
+    },
+  });
+}
+
 export function useAssignItemToSprint(workspaceId: string, projectId: string) {
   const client = useQueryClient();
   return useMutation({

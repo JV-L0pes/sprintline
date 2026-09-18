@@ -22,6 +22,17 @@ export function useCreateWorkspace() {
   });
 }
 
+export function useDeleteWorkspace() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (workspaceId: string) =>
+      apiRequest(`/api/v1/workspaces/${workspaceId}`, { method: "DELETE" }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.workspaces });
+    },
+  });
+}
+
 export function findWorkspaceBySlug(
   workspaces: Workspace[] | undefined,
   slug: string | undefined,

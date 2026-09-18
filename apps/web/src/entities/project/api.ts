@@ -11,6 +11,19 @@ export function useProjects(workspaceId: string | undefined) {
   });
 }
 
+export function useArchiveProject(workspaceId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (projectId: string) =>
+      apiRequest(`/api/v1/workspaces/${workspaceId}/projects/${projectId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.projects(workspaceId) });
+    },
+  });
+}
+
 export function useCreateProject(workspaceId: string) {
   const client = useQueryClient();
   return useMutation({

@@ -1,3 +1,4 @@
+import { ArrowRight, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useSession } from "@/entities/session";
@@ -5,6 +6,8 @@ import { useWorkspaces } from "@/entities/workspace/api";
 import { LanguageSwitch } from "@/features/shell/ui/language-switch";
 import { ThemeToggle } from "@/features/shell/ui/theme-toggle";
 import { CreateWorkspaceDialog } from "@/features/workspace/ui/create-workspace-dialog";
+import { DeleteWorkspaceDialog } from "@/features/workspace/ui/delete-workspace-dialog";
+import type { Workspace } from "@/shared/api/types";
 import { useI18n } from "@/shared/i18n";
 import { useReveal } from "@/shared/lib/use-reveal";
 import { Button } from "@/shared/ui/button";
@@ -15,6 +18,7 @@ export function HomePage() {
   const { user } = useSession();
   const workspaces = useWorkspaces();
   const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<Workspace | null>(null);
   useReveal([workspaces.data]);
 
   return (
@@ -62,15 +66,31 @@ export function HomePage() {
         ) : (
           <div className="led">
             {(workspaces.data ?? []).map((workspace) => (
-              <Link key={workspace.id} to={`/w/${workspace.slug}`} className="led-row fade">
-                <span className="grid gap-1">
+              <div key={workspace.id} className="led-row fade">
+                <Link to={`/w/${workspace.slug}`} className="grid gap-1">
                   <span className="text-lg font-extrabold tracking-tight">{workspace.name}</span>
                   <span className="mono text-ash">
                     {workspace.timezone} · {t(`members.${workspace.role.toLowerCase()}`)}
                   </span>
-                </span>
-                <span className="mono text-ash">→</span>
-              </Link>
+                </Link>
+                <div className="flex items-center gap-2">
+                  <Link to={`/w/${workspace.slug}`} className="sq" aria-label={t("workspace.open")}>
+                    <ArrowRight size={15} strokeWidth={2} aria-hidden />
+                  </Link>
+                  {workspace.role === "OWNER" ? (
+                    <button
+                      type="button"
+                      className="sq"
+                      aria-label={t("workspace.deleteTitle")}
+                      onClick={() => {
+                        setDeleting(workspace);
+                      }}
+                    >
+                      <Trash2 size={15} strokeWidth={2} aria-hidden />
+                    </button>
+                  ) : null}
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -79,6 +99,12 @@ export function HomePage() {
         open={creating}
         onClose={() => {
           setCreating(false);
+        }}
+      />
+      <DeleteWorkspaceDialog
+        workspace={deleting}
+        onClose={() => {
+          setDeleting(null);
         }}
       />
     </main>
