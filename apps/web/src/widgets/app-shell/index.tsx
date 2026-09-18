@@ -13,7 +13,7 @@ import { Skeleton } from "@/shared/ui/misc";
 export function AppShell() {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { user, logout } = useSession();
+  const { logout } = useSession();
   const { slug } = useParams<{ slug: string }>();
   const workspaces = useWorkspaces();
   const workspace = workspaces.data?.find((item) => item.slug === slug);
@@ -64,7 +64,6 @@ export function AppShell() {
             ) : null}
           </nav>
           <div className="flex min-w-0 items-center gap-3">
-            <span className="mono hidden text-ash lg:block">{user?.name}</span>
             <LanguageSwitch />
             <ThemeToggle />
             <button
