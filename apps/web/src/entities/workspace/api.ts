@@ -22,6 +22,20 @@ export function useCreateWorkspace() {
   });
 }
 
+export function useUpdateWorkspace(workspaceId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { name?: string; timezone?: string }) =>
+      apiRequest<Workspace>(`/api/v1/workspaces/${workspaceId}`, {
+        method: "PATCH",
+        body: input,
+      }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.workspaces });
+    },
+  });
+}
+
 export function useDeleteWorkspace() {
   const client = useQueryClient();
   return useMutation({

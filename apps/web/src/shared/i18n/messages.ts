@@ -64,6 +64,8 @@ export const pt = {
       "Apaga o workspace e tudo que há dentro dele: projetos, itens, sprints, eventos e integrações. Não há como desfazer.",
     deleteTypeName: "Digite o nome do workspace para confirmar",
     deleted: "Workspace excluído.",
+    updated: "Workspace atualizado.",
+    adminOnly: "Apenas administradores podem editar estas configurações.",
   },
   project: {
     label: "Projeto",
@@ -377,6 +379,8 @@ export const en: DeepMessages = {
       "Deletes the workspace and everything inside it: projects, items, sprints, events and integrations. This cannot be undone.",
     deleteTypeName: "Type the workspace name to confirm",
     deleted: "Workspace deleted.",
+    updated: "Workspace updated.",
+    adminOnly: "Only administrators can edit these settings.",
   },
   project: {
     label: "Project",

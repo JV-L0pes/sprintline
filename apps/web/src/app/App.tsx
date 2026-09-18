@@ -22,6 +22,9 @@ const MetricsPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import("@/pages/settings").then((module) => ({ default: module.SettingsPage })),
 );
+const MembersPage = lazy(() =>
+  import("@/pages/members").then((module) => ({ default: module.MembersPage })),
+);
 const InvitePage = lazy(() =>
   import("@/pages/invite").then((module) => ({ default: module.InvitePage })),
 );
@@ -88,6 +91,7 @@ export function App() {
           <Route path="p/:key/backlog" element={<BacklogPage />} />
           <Route path="p/:key/metrics" element={<MetricsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="members" element={<MembersPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
