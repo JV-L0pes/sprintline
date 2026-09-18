@@ -94,7 +94,8 @@
   display: grid;
   place-items: center;
   background: var(--ink);
-  color: var(--paper);
+  /* dourado sobre superfície invertida: mesma lógica da faixa do portfólio */
+  color: var(--gold-invert);
   font-weight: 800;
   font-size: 0.72rem;
   letter-spacing: -0.02em;
@@ -118,10 +119,14 @@
     border-color 0.3s var(--ease);
 }
 
-.nav-link:hover,
-.nav-link.active {
+.nav-link:hover {
   color: var(--ink);
   border-bottom-color: var(--ink);
+}
+
+.nav-link.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
 }
 
 .sq {
@@ -283,6 +288,18 @@
   text-transform: uppercase;
   color: var(--ash);
   margin-bottom: 0.75rem;
+}
+
+/* marcador de seção: mesmo quadrado do indicador ao vivo do portfólio */
+.sec-head .kicker::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 0.5rem;
+  background: var(--gold-fill);
+  border: 1px solid var(--gold);
+  vertical-align: baseline;
 }
 
 .lede {

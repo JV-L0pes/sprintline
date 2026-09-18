@@ -5,9 +5,11 @@
 @import "./ink.css";
 
 /*
-  Ink: a tipografia carrega a pagina; a cor e racionada ao eixo de valor.
-  Uma unica cor viva, o ouro, reservada a status (sprint ativa, WIP estourado,
-  resultado). Zero gradientes, zero sombras, raio 0.
+  Ink: a tipografia carrega a página; a cor é racionada ao eixo de valor.
+  Uma única cor viva, o ouro, reservada a sinal: status (sprint ativa, WIP
+  estourado, resultado), marcador de seção, marca e foco. Sobre superfície
+  invertida vale o --gold-invert, como na faixa do portfólio.
+  Zero gradientes, zero sombras, raio 0.
 */
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -108,7 +110,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--ink);
+    outline: 2px solid var(--gold);
     outline-offset: 3px;
   }
 
