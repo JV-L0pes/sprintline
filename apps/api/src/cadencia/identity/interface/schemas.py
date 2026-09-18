@@ -51,6 +51,11 @@ class WorkspaceCreateRequest(BaseModel):
     timezone: str = Field(default=DEFAULT_TIMEZONE, max_length=64)
 
 
+class WorkspaceUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    timezone: str | None = Field(default=None, max_length=64)
+
+
 class MemberOut(BaseModel):
     user_id: uuid.UUID
     name: str

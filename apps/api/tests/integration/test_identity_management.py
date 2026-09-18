@@ -1,4 +1,4 @@
-"""Gestão de identidade: rate limit, registro por convite, membros e senhas."""
+"""GestÃ£o de identidade: rate limit, registro por convite, membros e senhas."""
 
 from __future__ import annotations
 
@@ -115,7 +115,7 @@ async def test_member_role_change_rules(client: httpx.AsyncClient) -> None:
     assert promoted.status_code == 200
     assert promoted.json()["role"] == "ADMIN"
 
-    # Admin não gerencia owner nem promove a owner (escalation)
+    # Admin nÃ£o gerencia owner nem promove a owner (escalation)
     as_admin = await register_and_login(client, email="admin2@example.com")
     invite = (
         await client.post(
@@ -133,7 +133,7 @@ async def test_member_role_change_rules(client: httpx.AsyncClient) -> None:
     assert cannot_manage_owner.status_code == 403
     assert cannot_manage_owner.json()["code"] == "CANNOT_MANAGE_MEMBER"
 
-    # Owner não altera o próprio papel (evita lockout)
+    # Owner nÃ£o altera o prÃ³prio papel (evita lockout)
     self_change = await client.patch(
         f"/api/v1/workspaces/{workspace_id}/members/{owner_id}",
         json={"role": "MEMBER"},
@@ -190,7 +190,7 @@ async def test_admin_resets_member_password(client: httpx.AsyncClient) -> None:
     )
     assert reset.status_code == 204
 
-    # Sessões do membro revogadas (o cookie atual do client pertence a ele)
+    # SessÃµes do membro revogadas (o cookie atual do client pertence a ele)
     after_reset = await client.post("/api/v1/auth/refresh")
     assert after_reset.status_code == 401
     old_login = await client.post(
@@ -240,3 +240,54 @@ async def test_meta_exposes_registration_mode(client: httpx.AsyncClient) -> None
     body = response.json()
     assert body["registration_mode"] == "open"
     assert body["app_name"]
+
+
+async def test_update_workspace_renames_and_keeps_slug(client: httpx.AsyncClient) -> None:
+    headers = await register_and_login(client, email="renomeador@example.com")
+    workspace = await create_workspace(client, headers)
+    original_slug = workspace["slug"]
+
+    updated = await client.patch(
+        f"/api/v1/workspaces/{workspace['id']}",
+        json={"name": "Time Renomeado", "timezone": "America/Bahia"},
+        headers=headers,
+    )
+    assert updated.status_code == 200
+    body = updated.json()
+    assert (body["name"], body["timezone"], body["slug"]) == (
+        "Time Renomeado",
+        "America/Bahia",
+        original_slug,
+    )
+
+
+async def test_update_workspace_rejects_invalid_timezone_and_member(
+    client: httpx.AsyncClient,
+) -> None:
+    owner = await register_and_login(client, email="dona@example.com")
+    workspace = await create_workspace(client, owner)
+    invite = (
+        await client.post(
+            f"/api/v1/workspaces/{workspace['id']}/invites",
+            json={"email": "membro@example.com", "role": "MEMBER"},
+            headers=owner,
+        )
+    ).json()
+    member = await register_and_login(client, email="membro@example.com")
+    await client.post(f"/api/v1/invites/{invite['token']}/accept", headers=member)
+
+    forbidden = await client.patch(
+        f"/api/v1/workspaces/{workspace['id']}",
+        json={"name": "Nao Pode"},
+        headers=member,
+    )
+    assert forbidden.status_code == 403
+    assert forbidden.json()["code"] == "INSUFFICIENT_ROLE"
+
+    invalid = await client.patch(
+        f"/api/v1/workspaces/{workspace['id']}",
+        json={"timezone": "Marte/Olympus"},
+        headers=owner,
+    )
+    assert invalid.status_code == 422
+    assert invalid.json()["code"] == "INVALID_TIMEZONE"

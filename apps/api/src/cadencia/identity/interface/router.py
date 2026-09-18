@@ -24,6 +24,7 @@ from cadencia.identity.application.use_cases import (
     ResetMemberPassword,
     RotateSession,
     StartSession,
+    UpdateWorkspace,
 )
 from cadencia.identity.infrastructure.repositories import (
     SqlInviteRepository,
@@ -246,6 +247,24 @@ async def create_workspace(
     ).execute(user=user, name=payload.name, timezone=payload.timezone)
     return schemas.WorkspaceOut(
         id=view.id, name=view.name, slug=view.slug, timezone=view.timezone, role=view.role
+    )
+
+
+@router.patch("/workspaces/{workspace_id}")
+async def update_workspace(
+    payload: schemas.WorkspaceUpdateRequest,
+    access: AdminAccessDep,
+    session: SessionDep,
+) -> schemas.WorkspaceOut:
+    workspace = await UpdateWorkspace(SqlWorkspaceRepository(session)).execute(
+        workspace_id=access.workspace.id, name=payload.name, timezone=payload.timezone
+    )
+    return schemas.WorkspaceOut(
+        id=workspace.id,
+        name=workspace.name,
+        slug=workspace.slug,
+        timezone=workspace.timezone,
+        role=access.role,
     )
 
 

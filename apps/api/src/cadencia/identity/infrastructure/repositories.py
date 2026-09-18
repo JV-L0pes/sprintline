@@ -169,6 +169,19 @@ class SqlWorkspaceRepository:
             occurred_at=clock_for(self._session).now(),
         )
 
+    async def save(self, workspace: Workspace) -> None:
+        row = await self._session.get(orm.WorkspaceRow, workspace.id)
+        if row is not None:
+            row.name = workspace.name
+            row.timezone = workspace.timezone
+            await self._session.flush()
+            recorder_for(self._session).append(
+                workspace,
+                workspace_id=workspace.id,
+                audit=audit_for(self._session),
+                occurred_at=clock_for(self._session).now(),
+            )
+
     async def delete(self, workspace: Workspace) -> None:
         """Exclusão real em cascata (owner). O event log não tem FK, então é explícito."""
         from cadencia.platform.orm import DomainEventRow

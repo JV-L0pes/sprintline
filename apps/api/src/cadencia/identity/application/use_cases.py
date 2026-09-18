@@ -481,6 +481,26 @@ class ChangeOwnPassword:
         await self._sessions.revoke_all_for_user(user.id, self._clock.now())
 
 
+class UpdateWorkspace:
+    """Renomeia e/ou troca o fuso do workspace (admin+). O slug não muda."""
+
+    def __init__(self, workspaces: WorkspaceRepository) -> None:
+        self._workspaces = workspaces
+
+    async def execute(
+        self, *, workspace_id: uuid.UUID, name: str | None, timezone: str | None
+    ) -> Workspace:
+        workspace = await self._workspaces.get(workspace_id)
+        if workspace is None:
+            raise NotFoundError("Workspace não encontrado", code="WORKSPACE_NOT_FOUND")
+        if name is not None:
+            workspace.rename(name)
+        if timezone is not None:
+            workspace.change_timezone(timezone)
+        await self._workspaces.save(workspace)
+        return workspace
+
+
 class DeleteWorkspace:
     """Exclusão real do workspace (owner). Cascatas ficam no repositório."""
 

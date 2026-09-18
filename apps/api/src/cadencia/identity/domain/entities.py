@@ -80,6 +80,18 @@ class WorkspaceCreated(DomainEvent):
     slug: str
 
 
+@dataclass(frozen=True)
+class WorkspaceRenamed(DomainEvent):
+    event_type = "workspace.renamed"
+    name: str
+
+
+@dataclass(frozen=True)
+class WorkspaceTimezoneChanged(DomainEvent):
+    event_type = "workspace.timezone_changed"
+    timezone: str
+
+
 class Organization(AggregateRoot):
     def __init__(
         self,
@@ -135,6 +147,22 @@ class Workspace(AggregateRoot):
         )
         workspace._record(WorkspaceCreated(name=workspace.name, slug=workspace.slug))
         return workspace
+
+    def rename(self, name: str) -> None:
+        cleaned = name.strip()[:120]
+        if not cleaned:
+            raise ValidationError("Nome do workspace é obrigatório", code="INVALID_NAME")
+        if cleaned == self.name:
+            return
+        self.name = cleaned
+        self._record(WorkspaceRenamed(name=self.name))
+
+    def change_timezone(self, timezone: str) -> None:
+        validated = validate_timezone(timezone)
+        if validated == self.timezone:
+            return
+        self.timezone = validated
+        self._record(WorkspaceTimezoneChanged(timezone=self.timezone))
 
 
 @dataclass(frozen=True)
