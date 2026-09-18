@@ -40,13 +40,16 @@ export function AppShell() {
           >
             S
           </button>
-          <div className="min-w-0 flex-1">
+          <div className="hidden min-w-0 flex-1 sm:block">
             <p className="mono truncate text-ash">{workspace ? t("workspace.label") : ""}</p>
             <p className="truncate text-sm font-bold tracking-tight">
               {workspace?.name ?? t("common.loading")}
             </p>
           </div>
-          <nav className="hidden items-center gap-6 md:flex" aria-label="Workspace">
+          <nav
+            className="flex flex-1 items-center justify-end gap-4 sm:flex-none sm:justify-start md:gap-6"
+            aria-label="Workspace"
+          >
             {workspace ? (
               <>
                 <NavLink
@@ -72,7 +75,9 @@ export function AppShell() {
             ) : null}
           </nav>
           <div className="flex min-w-0 items-center gap-3">
-            <LanguageSwitch />
+            <div className="hidden md:flex">
+              <LanguageSwitch />
+            </div>
             <ThemeToggle />
             <button
               type="button"
@@ -145,19 +150,6 @@ export function AppShell() {
               </nav>
             )}
           </div>
-          {workspace ? (
-            <div>
-              <p className="rail-title">{t("workspace.label")}</p>
-              <nav className="grid">
-                <NavLink to={`/w/${workspace.slug}/members`} className="rail-item">
-                  <span>{t("workspace.members")}</span>
-                </NavLink>
-                <NavLink to={`/w/${workspace.slug}/settings`} className="rail-item">
-                  <span>{t("workspace.settings")}</span>
-                </NavLink>
-              </nav>
-            </div>
-          ) : null}
         </aside>
         <div className="min-w-0">
           <Outlet context={{ workspace }} />
