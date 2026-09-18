@@ -345,6 +345,48 @@ class ListItems:
         return [item_view(item, board) for item in work_items]
 
 
+class ArchiveProject:
+    """Arquivamento (soft delete): sai das listas, histórico permanece."""
+
+    def __init__(self, projects: ProjectRepository, clock: Clock) -> None:
+        self._projects = projects
+        self._clock = clock
+
+    async def execute(self, *, workspace_id: uuid.UUID, project_id: uuid.UUID) -> None:
+        project = await self._projects.get(project_id, workspace_id)
+        if project is None:
+            raise NotFoundError("Projeto não encontrado", code="PROJECT_NOT_FOUND")
+        project.archive(now=self._clock.now())
+        await self._projects.save(project)
+
+
+class ArchiveWorkItem:
+    def __init__(
+        self,
+        projects: ProjectRepository,
+        boards: BoardRepository,
+        items: WorkItemRepository,
+        clock: Clock,
+    ) -> None:
+        self._projects = projects
+        self._boards = boards
+        self._items = items
+        self._clock = clock
+
+    async def execute(self, *, workspace_id: uuid.UUID, item_id: uuid.UUID) -> None:
+        item = await self._items.get(item_id)
+        if item is None:
+            raise NotFoundError("Item não encontrado", code="ITEM_NOT_FOUND")
+        _, _board = await _load_context(
+            projects=self._projects,
+            boards=self._boards,
+            workspace_id=workspace_id,
+            project_id=item.project_id,
+        )
+        item.archive(now=self._clock.now())
+        await self._items.save(item)
+
+
 class CreateWorkItem:
     def __init__(
         self,

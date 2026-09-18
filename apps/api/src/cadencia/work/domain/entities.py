@@ -40,6 +40,11 @@ class ProjectCreated(DomainEvent):
     mode: str
 
 
+@dataclass(frozen=True)
+class ProjectArchived(DomainEvent):
+    event_type = "project.archived"
+
+
 class Project(AggregateRoot):
     def __init__(
         self,
@@ -92,6 +97,12 @@ class Project(AggregateRoot):
         number = self.next_number
         self.next_number += 1
         return number
+
+    def archive(self, *, now: datetime) -> None:
+        if self.archived_at is not None:
+            raise ConflictError("Projeto já arquivado", code="PROJECT_ALREADY_ARCHIVED")
+        self.archived_at = now
+        self._record(ProjectArchived())
 
 
 # ------------------------------------------------------------------ Board ---

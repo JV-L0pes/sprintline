@@ -14,6 +14,7 @@ from cadencia.identity.application.use_cases import (
     ChangeMemberRole,
     ChangeOwnPassword,
     CreateWorkspace,
+    DeleteWorkspace,
     EndSession,
     InviteMember,
     ListMembers,
@@ -36,6 +37,7 @@ from cadencia.identity.interface import schemas
 from cadencia.identity.interface.deps import (
     AdminAccessDep,
     CurrentUser,
+    OwnerAccessDep,
     SessionDep,
     WorkspaceAccessDep,
     get_clock,
@@ -245,6 +247,11 @@ async def create_workspace(
     return schemas.WorkspaceOut(
         id=view.id, name=view.name, slug=view.slug, timezone=view.timezone, role=view.role
     )
+
+
+@router.delete("/workspaces/{workspace_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_workspace(access: OwnerAccessDep, session: SessionDep) -> None:
+    await DeleteWorkspace(SqlWorkspaceRepository(session)).execute(workspace_id=access.workspace.id)
 
 
 @router.get("/workspaces/{workspace_id}")

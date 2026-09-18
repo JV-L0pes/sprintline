@@ -169,6 +169,29 @@ class SqlWorkspaceRepository:
             occurred_at=clock_for(self._session).now(),
         )
 
+    async def delete(self, workspace: Workspace) -> None:
+        """Exclusão real em cascata (owner). O event log não tem FK, então é explícito."""
+        from cadencia.platform.orm import DomainEventRow
+
+        await self._session.execute(
+            sa.delete(DomainEventRow).where(DomainEventRow.workspace_id == workspace.id)
+        )
+        row = await self._session.get(orm.WorkspaceRow, workspace.id)
+        if row is not None:
+            await self._session.delete(row)
+        await self._session.flush()
+        # remove organizações que ficaram sem nenhum workspace
+        await self._session.execute(
+            sa.delete(orm.OrganizationRow).where(
+                ~sa.exists(
+                    sa.select(orm.WorkspaceRow.id).where(
+                        orm.WorkspaceRow.organization_id == orm.OrganizationRow.id
+                    )
+                )
+            )
+        )
+        await self._session.flush()
+
 
 class SqlMembershipRepository:
     def __init__(self, session: AsyncSession) -> None:

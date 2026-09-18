@@ -45,6 +45,9 @@ Aqui fica a rastreabilidade entre regra, implementação e teste.
 | RN-30 colunas do board editáveis (nome, WIP, ordem, adicionar/remover) com ≥1 por categoria e remoção só se vazia | `work/domain/entities.py` (`Board`), `work/application/use_cases.py` | `test_board_columns.py` |
 | RN-31 bootstrap do primeiro owner em instância fechada | `scripts/create_admin.py` | smoke manual (script) |
 | RN-32 purge de dados de demonstração | `scripts/purge_demo.py` + guard no seed | smoke manual (script) |
+| RN-33 exclusão real de workspace só pelo owner, com cascata (projetos, itens, sprints, integrações, eventos) | `identity/application/use_cases.py` (`DeleteWorkspace`), `SqlWorkspaceRepository.delete` | `test_deletion.py::test_owner_deletes_workspace_with_cascade`, `::test_non_owner_cannot_delete_workspace` |
+| RN-34 arquivamento de projeto (soft delete, admin+) some das listas e preserva histórico | `work/domain/entities.py` (`Project.archive`), `ArchiveProject` | `test_deletion.py::test_archive_project_hides_it_from_lists` |
+| RN-35 arquivamento de item sai do board/backlog preservando eventos | `work/domain/entities.py` (`WorkItem.archive`), `ArchiveWorkItem` | `test_deletion.py::test_archive_item_hides_it_from_board_and_backlog` |
 
 ## Convenções transversais
 

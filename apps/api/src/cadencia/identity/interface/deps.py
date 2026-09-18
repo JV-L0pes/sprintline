@@ -100,3 +100,4 @@ def require_role(
 
 AdminAccessDep = Annotated[WorkspaceAccess, Depends(require_role(Role.ADMIN))]
 MemberAccessDep = Annotated[WorkspaceAccess, Depends(require_role(Role.MEMBER))]
+OwnerAccessDep = Annotated[WorkspaceAccess, Depends(require_role(Role.OWNER))]

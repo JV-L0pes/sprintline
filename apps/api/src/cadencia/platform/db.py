@@ -60,11 +60,21 @@ def normalize_database_url(url: str) -> str:
 def build_engine(settings: Settings) -> AsyncEngine:
     url = normalize_database_url(settings.database_url)
     if url.startswith("sqlite"):
-        return create_async_engine(
+        engine = create_async_engine(
             url,
             connect_args={"check_same_thread": False},
             poolclass=NullPool if ":memory:" not in url else sa.pool.StaticPool,
         )
+
+        @sa.event.listens_for(engine.sync_engine, "connect")
+        def _enable_sqlite_fks(dbapi_connection: object, _record: object) -> None:
+            # SQLite desliga FK por padrao; ligamos para ter a mesma semantica
+            # de producao (Postgres) nos testes — inclusive ON DELETE CASCADE.
+            cursor = dbapi_connection.cursor()  # type: ignore[attr-defined]
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+        return engine
     # Postgres serverless (Neon/pgbouncer): sem pool local, sem prepared statements.
     return create_async_engine(
         url,

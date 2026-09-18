@@ -8,7 +8,12 @@ from dataclasses import dataclass
 from fastapi import APIRouter, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from cadencia.identity.interface.deps import SessionDep, WorkspaceAccessDep, get_clock
+from cadencia.identity.interface.deps import (
+    AdminAccessDep,
+    SessionDep,
+    WorkspaceAccessDep,
+    get_clock,
+)
 from cadencia.shared.clock import Clock
 from cadencia.work.application import use_cases
 from cadencia.work.infrastructure.repositories import (
@@ -70,6 +75,33 @@ async def create_project(
         wip_enforcement=payload.wip_enforcement,
     )
     return schemas.ProjectOut.model_validate(view)
+
+
+@router.delete(
+    "/projects/{project_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def archive_project(
+    project_id: uuid.UUID,
+    access: AdminAccessDep,
+    session: SessionDep,
+) -> None:
+    repos = _repos(session)
+    await use_cases.ArchiveProject(projects=repos.projects, clock=_clock()).execute(
+        workspace_id=access.workspace.id, project_id=project_id
+    )
+
+
+@router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def archive_item(
+    item_id: uuid.UUID,
+    access: WorkspaceAccessDep,
+    session: SessionDep,
+) -> None:
+    repos = _repos(session)
+    await use_cases.ArchiveWorkItem(
+        projects=repos.projects, boards=repos.boards, items=repos.items, clock=_clock()
+    ).execute(workspace_id=access.workspace.id, item_id=item_id)
 
 
 @router.get("/projects/{project_id}/board")
