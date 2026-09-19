@@ -1,12 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useInviteMember } from "@/entities/member/api";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
 import { Dialog } from "@/shared/ui/dialog";
-import { Field, Input, Select } from "@/shared/ui/input";
+import { Field, Input } from "@/shared/ui/input";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 
 const schema = z.object({
@@ -99,11 +100,24 @@ export function InviteDialog({
             <Input id="invite-email" type="email" {...form.register("email")} />
           </Field>
           <Field label={t("members.role")} htmlFor="invite-role">
-            <Select id="invite-role" {...form.register("role")}>
-              <option value="MEMBER">{t("members.member")}</option>
-              <option value="ADMIN">{t("members.admin")}</option>
-              <option value="VIEWER">{t("members.viewer")}</option>
-            </Select>
+            <Controller
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <Select
+                  id="invite-role"
+                  value={field.value}
+                  onChange={(event) => {
+                    field.onChange(event.target.value);
+                  }}
+                  onBlur={field.onBlur}
+                >
+                  <option value="MEMBER">{t("members.member")}</option>
+                  <option value="ADMIN">{t("members.admin")}</option>
+                  <option value="VIEWER">{t("members.viewer")}</option>
+                </Select>
+              )}
+            />
           </Field>
         </form>
       )}

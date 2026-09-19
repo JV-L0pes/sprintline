@@ -1,11 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useCreateProject } from "@/entities/project/api";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
 import { Dialog } from "@/shared/ui/dialog";
-import { Field, Input, Select } from "@/shared/ui/input";
+import { Field, Input } from "@/shared/ui/input";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 
 const schema = z.object({
@@ -90,10 +91,23 @@ export function CreateProjectDialog({
             />
           </Field>
           <Field label={t("item.points")} htmlFor="project-mode">
-            <Select id="project-mode" {...form.register("mode")}>
-              <option value="POINTS">{t("project.points")}</option>
-              <option value="COUNT">{t("project.count")}</option>
-            </Select>
+            <Controller
+              control={form.control}
+              name="mode"
+              render={({ field }) => (
+                <Select
+                  id="project-mode"
+                  value={field.value}
+                  onChange={(event) => {
+                    field.onChange(event.target.value);
+                  }}
+                  onBlur={field.onBlur}
+                >
+                  <option value="POINTS">{t("project.points")}</option>
+                  <option value="COUNT">{t("project.count")}</option>
+                </Select>
+              )}
+            />
           </Field>
         </div>
       </form>

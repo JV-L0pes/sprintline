@@ -536,6 +536,64 @@
   resize: vertical;
 }
 
+/* ------------------------------------------------------------- select --- */
+.sel-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sel-trigger:disabled {
+  color: var(--ash);
+  background: var(--hover-bg);
+  cursor: not-allowed;
+}
+
+.sel-caret {
+  color: var(--ash);
+  flex: none;
+  transition: transform 0.3s var(--ease);
+}
+
+.sel-trigger[aria-expanded="true"] .sel-caret {
+  transform: rotate(180deg);
+}
+
+.sel-panel {
+  position: fixed;
+  z-index: 210;
+  overflow-y: auto;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+}
+
+.sel-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.sel-option[data-active] {
+  background: var(--hover-bg);
+}
+
+.sel-option[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.sel-option[aria-disabled="true"] {
+  color: var(--ash);
+  cursor: not-allowed;
+}
+
 .error-text {
   color: var(--danger);
   font-size: 0.78rem;

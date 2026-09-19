@@ -1,13 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useUpdateWorkspace } from "@/entities/workspace/api";
 import { detectTimezone, timezoneOptions } from "@/features/workspace/model";
 import type { Workspace } from "@/shared/api/types";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
-import { Field, Input, Select } from "@/shared/ui/input";
+import { Field, Input } from "@/shared/ui/input";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 
 const schema = z.object({
@@ -52,13 +53,26 @@ export function GeneralSettings({ workspace }: { workspace: Workspace }) {
         htmlFor="workspace-general-timezone"
         hint={t("workspace.timezoneHint")}
       >
-        <Select id="workspace-general-timezone" {...form.register("timezone")}>
-          {timezoneChoices.map(([value, label]) => (
-            <option key={value} value={value}>
-              {value === label ? value : `${label} — ${value}`}
-            </option>
-          ))}
-        </Select>
+        <Controller
+          control={form.control}
+          name="timezone"
+          render={({ field }) => (
+            <Select
+              id="workspace-general-timezone"
+              value={field.value}
+              onChange={(event) => {
+                field.onChange(event.target.value);
+              }}
+              onBlur={field.onBlur}
+            >
+              {timezoneChoices.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {value === label ? value : `${label} — ${value}`}
+                </option>
+              ))}
+            </Select>
+          )}
+        />
       </Field>
       <div className="flex items-center justify-between gap-3">
         <p className="mono text-ash">{workspace.slug}</p>

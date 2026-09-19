@@ -8,7 +8,8 @@ import { useI18n } from "@/shared/i18n";
 import { addDays, isValidSprintRange, toIsoDate } from "@/shared/lib/dates";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, Dialog } from "@/shared/ui/dialog";
-import { Field, Input, Select, Textarea } from "@/shared/ui/input";
+import { Field, Input, Textarea } from "@/shared/ui/input";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 
 const sprintSchema = z.object({

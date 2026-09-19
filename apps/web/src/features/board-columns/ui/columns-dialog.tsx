@@ -10,7 +10,8 @@ import type { Board, StatusCategory } from "@/shared/api/types";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
 import { Dialog } from "@/shared/ui/dialog";
-import { Input, Select } from "@/shared/ui/input";
+import { Input } from "@/shared/ui/input";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 
 const CATEGORIES: StatusCategory[] = ["TODO", "IN_PROGRESS", "DONE"];

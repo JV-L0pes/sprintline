@@ -2,7 +2,6 @@ import {
   forwardRef,
   type InputHTMLAttributes,
   type ReactNode,
-  type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
   useId,
 } from "react";
@@ -46,13 +45,3 @@ export const Textarea = forwardRef<
 >(function Textarea({ className, ...props }, ref) {
   return <textarea ref={ref} className={cn("textarea", className)} {...props} />;
 });
-
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
-  function Select({ className, children, ...props }, ref) {
-    return (
-      <select ref={ref} className={cn("select", className)} {...props}>
-        {children}
-      </select>
-    );
-  },
-);

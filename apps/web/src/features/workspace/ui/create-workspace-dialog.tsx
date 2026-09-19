@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useCreateWorkspace } from "@/entities/workspace/api";
@@ -8,7 +8,8 @@ import { detectTimezone, timezoneOptions } from "@/features/workspace/model";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
 import { Dialog } from "@/shared/ui/dialog";
-import { Field, Input, Select } from "@/shared/ui/input";
+import { Field, Input } from "@/shared/ui/input";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 
 const schema = z.object({
@@ -71,13 +72,26 @@ export function CreateWorkspaceDialog({ open, onClose }: { open: boolean; onClos
           htmlFor="workspace-timezone"
           hint={t("workspace.timezoneHint")}
         >
-          <Select id="workspace-timezone" {...form.register("timezone")}>
-            {timezoneChoices.map(([value, label]) => (
-              <option key={value} value={value}>
-                {value === label ? value : `${label} — ${value}`}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            control={form.control}
+            name="timezone"
+            render={({ field }) => (
+              <Select
+                id="workspace-timezone"
+                value={field.value}
+                onChange={(event) => {
+                  field.onChange(event.target.value);
+                }}
+                onBlur={field.onBlur}
+              >
+                {timezoneChoices.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {value === label ? value : `${label} — ${value}`}
+                  </option>
+                ))}
+              </Select>
+            )}
+          />
         </Field>
       </form>
     </Dialog>

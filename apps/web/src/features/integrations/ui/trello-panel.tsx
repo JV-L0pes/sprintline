@@ -10,8 +10,8 @@ import {
 import type { Integration } from "@/shared/api/types";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
-import { Select } from "@/shared/ui/input";
 import { EmptyState } from "@/shared/ui/misc";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 import { JobRow } from "./job-row";
 

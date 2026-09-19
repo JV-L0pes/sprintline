@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   useArchiveItem,
@@ -18,7 +18,8 @@ import type { Sprint, WorkItem } from "@/shared/api/types";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, Dialog } from "@/shared/ui/dialog";
-import { Field, Input, Select, Textarea } from "@/shared/ui/input";
+import { Field, Input, Textarea } from "@/shared/ui/input";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 
 const FIBONACCI = [1, 2, 3, 5, 8, 13] as const;
@@ -155,22 +156,49 @@ export function ItemDialog({
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("item.type")} htmlFor="item-type">
-              <Select id="item-type" {...form.register("type")} disabled={Boolean(item)}>
-                {WORK_ITEM_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {t(typeLabelKey(type))}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <Select
+                    id="item-type"
+                    value={field.value}
+                    onChange={(event) => {
+                      field.onChange(event.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                    disabled={Boolean(item)}
+                  >
+                    {WORK_ITEM_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {t(typeLabelKey(type))}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
             <Field label={t("item.priority")} htmlFor="item-priority">
-              <Select id="item-priority" {...form.register("priority")}>
-                {PRIORITIES.map((priority) => (
-                  <option key={priority} value={priority}>
-                    {t(priorityLabelKey(priority))}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <Select
+                    id="item-priority"
+                    value={field.value}
+                    onChange={(event) => {
+                      field.onChange(event.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                  >
+                    {PRIORITIES.map((priority) => (
+                      <option key={priority} value={priority}>
+                        {t(priorityLabelKey(priority))}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
           </div>
           <Field
@@ -185,14 +213,27 @@ export function ItemDialog({
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("item.points")} htmlFor="item-points" hint={t("item.pointsHint")}>
-              <Select id="item-points" {...form.register("story_points")}>
-                <option value="">{t("item.noEstimate")}</option>
-                {FIBONACCI.map((points) => (
-                  <option key={points} value={points}>
-                    {points}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                control={form.control}
+                name="story_points"
+                render={({ field }) => (
+                  <Select
+                    id="item-points"
+                    value={field.value}
+                    onChange={(event) => {
+                      field.onChange(event.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                  >
+                    <option value="">{t("item.noEstimate")}</option>
+                    {FIBONACCI.map((points) => (
+                      <option key={points} value={points}>
+                        {points}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
             <Field label={t("item.dueDate")} htmlFor="item-due">
               <Input id="item-due" type="date" {...form.register("due_date")} />
@@ -200,16 +241,29 @@ export function ItemDialog({
           </div>
           {sprints !== undefined ? (
             <Field label={t("item.sprint")} htmlFor="item-sprint">
-              <Select id="item-sprint" {...form.register("sprint_id")}>
-                <option value="">{t("item.noSprint")}</option>
-                {sprints
-                  .filter((sprint) => sprint.state !== "COMPLETED")
-                  .map((sprint) => (
-                    <option key={sprint.id} value={sprint.id}>
-                      {sprint.name} · {t(`sprint.${sprint.state.toLowerCase()}`)}
-                    </option>
-                  ))}
-              </Select>
+              <Controller
+                control={form.control}
+                name="sprint_id"
+                render={({ field }) => (
+                  <Select
+                    id="item-sprint"
+                    value={field.value}
+                    onChange={(event) => {
+                      field.onChange(event.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                  >
+                    <option value="">{t("item.noSprint")}</option>
+                    {sprints
+                      .filter((sprint) => sprint.state !== "COMPLETED")
+                      .map((sprint) => (
+                        <option key={sprint.id} value={sprint.id}>
+                          {sprint.name} · {t(`sprint.${sprint.state.toLowerCase()}`)}
+                        </option>
+                      ))}
+                  </Select>
+                )}
+              />
             </Field>
           ) : null}
         </form>

@@ -53,9 +53,8 @@ test.describe("jornada principal", () => {
     // Planeja o item na sprint pelo dialogo (caminho acessível e deterministico;
     // o arrasto fica num handle dedicado fora do alvo de clique)
     await backlogSection.getByRole("button", { name: new RegExp(itemTitle) }).click();
-    await page
-      .getByLabel("Sprint", { exact: true })
-      .selectOption({ label: "Sprint E2E · Planejada" });
+    await page.getByRole("combobox", { name: "Sprint", exact: true }).click();
+    await page.getByRole("option", { name: /Sprint E2E/ }).click();
     await page.getByRole("button", { name: /salvar/i }).click();
 
     const sprintSection = sectionByHeading(page, "Sprint E2E");

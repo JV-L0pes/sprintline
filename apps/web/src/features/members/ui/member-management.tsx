@@ -13,8 +13,9 @@ import { useI18n } from "@/shared/i18n";
 import { formatDateFull } from "@/shared/lib/dates";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, Dialog } from "@/shared/ui/dialog";
-import { Field, Input, Select } from "@/shared/ui/input";
+import { Field, Input } from "@/shared/ui/input";
 import { Avatar, Badge, EmptyState, Skeleton } from "@/shared/ui/misc";
+import { Select } from "@/shared/ui/select";
 import { useToast } from "@/shared/ui/toast";
 
 const ROLE_RANK: Record<Role, number> = { OWNER: 3, ADMIN: 2, MEMBER: 1, VIEWER: 0 };
