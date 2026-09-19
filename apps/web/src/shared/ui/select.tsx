@@ -182,16 +182,24 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
       }
       close();
     };
-    const onDismiss = () => {
+    const onScroll = (event: Event) => {
+      const target = event.target as Node | null;
+      // rolar dentro do proprio painel (barra de scroll) nao pode fechar
+      if (target && panelRef.current?.contains(target)) {
+        return;
+      }
+      close();
+    };
+    const onResize = () => {
       close();
     };
     document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("scroll", onDismiss, true);
-    window.addEventListener("resize", onDismiss);
+    document.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("scroll", onDismiss, true);
-      window.removeEventListener("resize", onDismiss);
+      document.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onResize);
     };
   }, [open, close]);
 
