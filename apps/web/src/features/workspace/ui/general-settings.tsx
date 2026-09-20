@@ -39,43 +39,40 @@ export function GeneralSettings({ workspace }: { workspace: Workspace }) {
   });
 
   return (
-    <form
-      id="workspace-general-form"
-      onSubmit={(event) => void onSubmit(event)}
-      className="grid max-w-xl gap-4"
-      noValidate
-    >
-      <Field label={t("workspace.name")} htmlFor="workspace-general-name">
-        <Input id="workspace-general-name" {...form.register("name")} />
-      </Field>
-      <Field
-        label={t("workspace.timezone")}
-        htmlFor="workspace-general-timezone"
-        hint={t("workspace.timezoneHint")}
-      >
-        <Controller
-          control={form.control}
-          name="timezone"
-          render={({ field }) => (
-            <Select
-              id="workspace-general-timezone"
-              value={field.value}
-              onChange={(event) => {
-                field.onChange(event.target.value);
-              }}
-              onBlur={field.onBlur}
-            >
-              {timezoneChoices.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {value === label ? value : `${label} — ${value}`}
-                </option>
-              ))}
-            </Select>
-          )}
-        />
-      </Field>
-      <div className="flex items-center justify-between gap-3">
+    <form id="workspace-general-form" onSubmit={(event) => void onSubmit(event)} noValidate>
+      <div className="grid max-w-xl gap-4">
+        <Field label={t("workspace.name")} htmlFor="workspace-general-name">
+          <Input id="workspace-general-name" {...form.register("name")} />
+        </Field>
+        <Field
+          label={t("workspace.timezone")}
+          htmlFor="workspace-general-timezone"
+          hint={t("workspace.timezoneHint")}
+        >
+          <Controller
+            control={form.control}
+            name="timezone"
+            render={({ field }) => (
+              <Select
+                id="workspace-general-timezone"
+                value={field.value}
+                onChange={(event) => {
+                  field.onChange(event.target.value);
+                }}
+                onBlur={field.onBlur}
+              >
+                {timezoneChoices.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {value === label ? value : `${label} — ${value}`}
+                  </option>
+                ))}
+              </Select>
+            )}
+          />
+        </Field>
         <p className="mono text-ash">{workspace.slug}</p>
+      </div>
+      <div className="mt-6 flex justify-end">
         <Button type="submit" disabled={updateWorkspace.isPending}>
           {t("common.save")}
         </Button>
