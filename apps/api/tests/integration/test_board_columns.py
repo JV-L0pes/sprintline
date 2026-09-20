@@ -1,4 +1,4 @@
-"""Colunas configuráveis do board: criar, renomear, WIP, ordem e remover."""
+"""Colunas configurÃ¡veis do board: criar, renomear, WIP, ordem e remover."""
 
 from __future__ import annotations
 
@@ -82,7 +82,7 @@ async def test_delete_column_rules(client: httpx.AsyncClient) -> None:
     headers, workspace_id, project_id, board = await _setup(client)
     todo_id = board["columns"][0]["id"]
 
-    # Não pode remover a última coluna de uma categoria (RN-06)
+    # NÃ£o pode remover a Ãºltima coluna de uma categoria (RN-06)
     last_of_category = await client.delete(
         f"/api/v1/workspaces/{workspace_id}/projects/{project_id}/board/columns/{todo_id}",
         headers=headers,
@@ -127,3 +127,48 @@ async def test_delete_non_empty_column_is_blocked(client: httpx.AsyncClient) -> 
     )
     assert blocked.status_code == 409
     assert blocked.json()["code"] == "COLUMN_NOT_EMPTY"
+
+
+async def test_change_column_category_with_coverage_guard(
+    client: httpx.AsyncClient,
+) -> None:
+    headers, workspace_id, project_id, board = await _setup(client)
+    base = f"/api/v1/workspaces/{workspace_id}/projects/{project_id}/board/columns"
+    created = (
+        await client.post(
+            base,
+            json={"name": "Refinamento", "category": "TODO"},
+            headers=headers,
+        )
+    ).json()
+    first_todo = board["columns"][0]
+    extra_todo = created["columns"][-1]
+
+    moved = await client.patch(
+        f"{base}/{first_todo['id']}",
+        json={"category": "IN_PROGRESS"},
+        headers=headers,
+    )
+    assert moved.status_code == 200
+    categories = {column["id"]: column["category"] for column in moved.json()["columns"]}
+    assert categories[first_todo["id"]] == "IN_PROGRESS"
+
+    # Refinamento virou a unica coluna TODO: mudar de categoria deve ser bloqueado
+    blocked = await client.patch(
+        f"{base}/{extra_todo['id']}",
+        json={"category": "IN_PROGRESS"},
+        headers=headers,
+    )
+    assert blocked.status_code == 422
+    assert blocked.json()["code"] == "BOARD_LAST_CATEGORY_COLUMN"
+
+    # renomear nao mexe na categoria
+    in_progress_id = board["columns"][1]["id"]
+    renamed = await client.patch(
+        f"{base}/{in_progress_id}",
+        json={"name": "Em andamento"},
+        headers=headers,
+    )
+    assert renamed.status_code == 200
+    row = next(column for column in renamed.json()["columns"] if column["id"] == in_progress_id)
+    assert (row["name"], row["category"]) == ("Em andamento", "IN_PROGRESS")

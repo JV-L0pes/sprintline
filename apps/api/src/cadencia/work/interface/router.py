@@ -155,6 +155,7 @@ async def update_column(
         project_id=project_id,
         column_id=column_id,
         name=payload.name,
+        category=payload.category,
         wip_limit=payload.wip_limit,
         clear_wip=payload.clear_wip,
     )

@@ -260,6 +260,7 @@ class UpdateBoardColumn(_BoardColumnsUseCase):
         project_id: uuid.UUID,
         column_id: uuid.UUID,
         name: str | None = None,
+        category: StatusCategory | None = None,
         wip_limit: int | None = None,
         clear_wip: bool = False,
     ) -> BoardView:
@@ -269,7 +270,9 @@ class UpdateBoardColumn(_BoardColumnsUseCase):
             workspace_id=workspace_id,
             project_id=project_id,
         )
-        board.update_column(column_id, name=name, wip_limit=wip_limit, clear_wip=clear_wip)
+        board.update_column(
+            column_id, name=name, category=category, wip_limit=wip_limit, clear_wip=clear_wip
+        )
         return await self._save_and_view(
             workspace_id=workspace_id, project_id=project_id, board=board
         )

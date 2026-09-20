@@ -198,6 +198,7 @@ class Board(AggregateRoot):
         column_id: uuid.UUID,
         *,
         name: str | None = None,
+        category: StatusCategory | None = None,
         wip_limit: int | None = None,
         clear_wip: bool = False,
     ) -> BoardColumn:
@@ -208,6 +209,19 @@ class Board(AggregateRoot):
             if not name.strip():
                 raise ValidationError("Nome da coluna e obrigatório", code="INVALID_COLUMN_NAME")
             column.name = name.strip()[:60]
+        if category is not None and category is not column.category:
+            # RN-30: toda categoria precisa continuar com pelo menos uma coluna.
+            remaining = [
+                candidate
+                for candidate in self.columns
+                if candidate.id != column_id and candidate.category is column.category
+            ]
+            if not remaining:
+                raise ValidationError(
+                    "Não é possível deixar uma categoria sem colunas",
+                    code="BOARD_LAST_CATEGORY_COLUMN",
+                )
+            column.category = category
         if clear_wip:
             column.wip_limit = None
         elif wip_limit is not None:
