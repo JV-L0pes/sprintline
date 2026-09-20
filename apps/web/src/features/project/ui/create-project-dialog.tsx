@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useCreateProject, useProjects } from "@/entities/project/api";
@@ -13,11 +12,6 @@ import { useToast } from "@/shared/ui/toast";
 
 const schema = z.object({
   name: z.string().min(1).max(120),
-  key: z
-    .string()
-    .min(2)
-    .max(10)
-    .regex(/^[A-Za-z][A-Za-z0-9]*$/, "INVALID_PROJECT_KEY"),
   mode: z.enum(["POINTS", "COUNT"]),
 });
 
@@ -38,31 +32,18 @@ export function CreateProjectDialog({
   const toast = useToast();
   const createProject = useCreateProject(workspaceId);
   const projects = useProjects(workspaceId);
-  const [keyTouched, setKeyTouched] = useState(false);
   const form = useForm<ProjectValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", key: "", mode: "POINTS" },
+    defaultValues: { name: "", mode: "POINTS" },
   });
-  const name = form.watch("name");
-
-  useEffect(() => {
-    if (open) {
-      setKeyTouched(false);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (keyTouched) {
-      return;
-    }
-    const taken = new Set((projects.data ?? []).map((project) => project.key));
-    const suggestion = suggestProjectKey(name, taken);
-    form.setValue("key", suggestion, { shouldValidate: suggestion.length >= 2 });
-  }, [form, keyTouched, name, projects.data]);
 
   const onSubmit = form.handleSubmit(async (values) => {
+    const taken = new Set((projects.data ?? []).map((project) => project.key));
     try {
-      const project = await createProject.mutateAsync(values);
+      const project = await createProject.mutateAsync({
+        ...values,
+        key: suggestProjectKey(values.name, taken),
+      });
       form.reset();
       onClose();
       onCreated?.(project.key);
@@ -96,44 +77,25 @@ export function CreateProjectDialog({
         <Field label={t("project.name")} htmlFor="project-name">
           <Input id="project-name" {...form.register("name")} />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label={t("project.key")}
-            htmlFor="project-key"
-            hint={t("project.keyHint")}
-            error={form.formState.errors.key ? t("errors.REQUEST_VALIDATION_ERROR") : undefined}
-          >
-            <Input
-              id="project-key"
-              className="uppercase"
-              maxLength={10}
-              {...form.register("key", {
-                onChange: () => {
-                  setKeyTouched(true);
-                },
-              })}
-            />
-          </Field>
-          <Field label={t("item.points")} htmlFor="project-mode">
-            <Controller
-              control={form.control}
-              name="mode"
-              render={({ field }) => (
-                <Select
-                  id="project-mode"
-                  value={field.value}
-                  onChange={(event) => {
-                    field.onChange(event.target.value);
-                  }}
-                  onBlur={field.onBlur}
-                >
-                  <option value="POINTS">{t("project.points")}</option>
-                  <option value="COUNT">{t("project.count")}</option>
-                </Select>
-              )}
-            />
-          </Field>
-        </div>
+        <Field label={t("item.points")} htmlFor="project-mode">
+          <Controller
+            control={form.control}
+            name="mode"
+            render={({ field }) => (
+              <Select
+                id="project-mode"
+                value={field.value}
+                onChange={(event) => {
+                  field.onChange(event.target.value);
+                }}
+                onBlur={field.onBlur}
+              >
+                <option value="POINTS">{t("project.points")}</option>
+                <option value="COUNT">{t("project.count")}</option>
+              </Select>
+            )}
+          />
+        </Field>
       </form>
     </Dialog>
   );

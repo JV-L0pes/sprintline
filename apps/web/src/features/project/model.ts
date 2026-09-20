@@ -24,10 +24,10 @@ export function suggestProjectKey(name: string, taken: ReadonlySet<string> = new
   if (!base) {
     base = words.join("").slice(0, 4);
   }
-  // a chave precisa começar com letra
+  // a chave precisa começar com letra; sem material, cai no padrão PRJ
   base = base.replace(/^[0-9]+/, "").slice(0, KEY_MAX);
   if (base.length < KEY_MIN) {
-    return "";
+    base = "PRJ";
   }
   let candidate = base;
   let counter = 2;

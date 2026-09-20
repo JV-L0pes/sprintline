@@ -27,9 +27,10 @@ describe("suggestProjectKey", () => {
     expect(suggestProjectKey("ABCDEFGHIJKLMNO")).toBe("ABCD");
   });
 
-  it("retorna vazio quando não dá para sugerir", () => {
-    expect(suggestProjectKey("")).toBe("");
-    expect(suggestProjectKey("42")).toBe("");
-    expect(suggestProjectKey("A")).toBe("");
+  it("cai no padrão PRJ quando o nome não gera chave", () => {
+    expect(suggestProjectKey("")).toBe("PRJ");
+    expect(suggestProjectKey("42")).toBe("PRJ");
+    expect(suggestProjectKey("A")).toBe("PRJ");
+    expect(suggestProjectKey("", new Set(["PRJ"]))).toBe("PRJ2");
   });
 });

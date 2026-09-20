@@ -27,7 +27,6 @@ test.describe("jornada principal", () => {
 
     await page.getByRole("button", { name: /novo projeto/i }).click();
     await page.getByLabel(/nome/i).fill("App E2E");
-    await page.getByLabel(/chave/i).fill("E2E");
     await page.getByRole("button", { name: /^criar$/i }).click();
 
     await expect(page.getByText(/nenhuma sprint ativa/i)).toBeVisible();
