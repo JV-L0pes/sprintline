@@ -27,7 +27,12 @@ export function groupItemsByColumn(board: Board): Map<string, WorkItem[]> {
   return grouped;
 }
 
-type ColumnPatch = { name?: string; wip_limit?: number | null; clear_wip?: boolean };
+type ColumnPatch = {
+  name?: string;
+  category?: string;
+  wip_limit?: number | null;
+  clear_wip?: boolean;
+};
 
 interface CreateColumnInput {
   name: string;

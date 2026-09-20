@@ -96,7 +96,29 @@ export function ColumnsDialog({
                   }
                 }}
               />
-              <span className="mono w-28 shrink-0 text-ash">{CATEGORY_LABEL[column.category]}</span>
+              <div className="w-36 shrink-0">
+                <Select
+                  aria-label={t("board.columnCategory")}
+                  value={column.category}
+                  disabled={updateColumn.isPending}
+                  onChange={(event) => {
+                    updateColumn.mutate(
+                      { columnId: column.id, patch: { category: event.target.value } },
+                      {
+                        onError: (error) => {
+                          toast.pushError(error);
+                        },
+                      },
+                    );
+                  }}
+                >
+                  {CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {CATEGORY_LABEL[category]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
               <button
                 type="button"
                 className="sq"
