@@ -135,42 +135,46 @@ export function ColumnsDialog({
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <label className="lab w-28" htmlFor={`wip-${column.id}`}>
+              <label className="lab shrink-0" htmlFor={`wip-${column.id}`}>
                 {t("board.columnWip")}
               </label>
-              <Input
-                id={`wip-${column.id}`}
-                type="number"
-                min={1}
-                className="w-28"
-                placeholder={t("board.columnWipPlaceholder")}
-                defaultValue={column.wip_limit ?? ""}
-                onBlur={(event) => {
-                  const raw = event.target.value.trim();
-                  const next = raw === "" ? null : Number(raw);
-                  if (next !== null && (!Number.isInteger(next) || next < 1)) {
-                    event.target.value = column.wip_limit === null ? "" : String(column.wip_limit);
-                    toast.push(t("errors.INVALID_WIP_LIMIT"), "error");
-                    return;
-                  }
-                  if (next === column.wip_limit) {
-                    return;
-                  }
-                  updateColumn.mutate(
-                    {
-                      columnId: column.id,
-                      patch: next === null ? { clear_wip: true } : { wip_limit: next },
-                    },
-                    {
-                      onError: (error) => {
-                        toast.pushError(error);
+              <div className="w-32 shrink-0">
+                <Input
+                  id={`wip-${column.id}`}
+                  type="number"
+                  min={1}
+                  placeholder={t("board.columnWipPlaceholder")}
+                  defaultValue={column.wip_limit ?? ""}
+                  onBlur={(event) => {
+                    const raw = event.target.value.trim();
+                    const next = raw === "" ? null : Number(raw);
+                    if (next !== null && (!Number.isInteger(next) || next < 1)) {
+                      event.target.value =
+                        column.wip_limit === null ? "" : String(column.wip_limit);
+                      toast.push(t("errors.INVALID_WIP_LIMIT"), "error");
+                      return;
+                    }
+                    if (next === column.wip_limit) {
+                      return;
+                    }
+                    updateColumn.mutate(
+                      {
+                        columnId: column.id,
+                        patch: next === null ? { clear_wip: true } : { wip_limit: next },
                       },
-                    },
-                  );
-                }}
-              />
-              <span className="mono text-ash">
-                {t("board.itemCount", { n: column.item_count })}
+                      {
+                        onError: (error) => {
+                          toast.pushError(error);
+                        },
+                      },
+                    );
+                  }}
+                />
+              </div>
+              <span className="mono ml-auto whitespace-nowrap text-ash">
+                {column.item_count === 1
+                  ? t("board.itemCountOne")
+                  : t("board.itemCount", { n: column.item_count })}
               </span>
             </div>
           </div>

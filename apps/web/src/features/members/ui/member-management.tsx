@@ -142,30 +142,31 @@ export function MemberManagement({
                 </span>
                 {manageable ? (
                   <>
-                    <Select
-                      aria-label={t("members.role")}
-                      className="w-32"
-                      value={member.role}
-                      disabled={updateRole.isPending}
-                      onChange={(event) => {
-                        updateRole.mutate(
-                          { userId: member.user_id, role: event.target.value },
-                          {
-                            onError: (error) => {
-                              toast.pushError(error);
+                    <div className="w-32 shrink-0">
+                      <Select
+                        aria-label={t("members.role")}
+                        value={member.role}
+                        disabled={updateRole.isPending}
+                        onChange={(event) => {
+                          updateRole.mutate(
+                            { userId: member.user_id, role: event.target.value },
+                            {
+                              onError: (error) => {
+                                toast.pushError(error);
+                              },
                             },
-                          },
-                        );
-                      }}
-                    >
-                      {MANAGEABLE_ROLES.filter(
-                        (role) => ROLE_RANK[role] <= ROLE_RANK[actorRole],
-                      ).map((role) => (
-                        <option key={role} value={role}>
-                          {t(`members.${role.toLowerCase()}`)}
-                        </option>
-                      ))}
-                    </Select>
+                          );
+                        }}
+                      >
+                        {MANAGEABLE_ROLES.filter(
+                          (role) => ROLE_RANK[role] <= ROLE_RANK[actorRole],
+                        ).map((role) => (
+                          <option key={role} value={role}>
+                            {t(`members.${role.toLowerCase()}`)}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
                     <button
                       type="button"
                       className="sq"

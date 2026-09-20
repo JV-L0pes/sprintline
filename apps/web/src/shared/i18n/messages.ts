@@ -105,6 +105,7 @@ export const pt = {
     moveRight: "Mover para a direita",
     removeColumn: "Remover coluna",
     itemCount: "{n} itens",
+    itemCountOne: "1 item",
   },
   item: {
     type: "Tipo",
@@ -417,6 +418,7 @@ export const en: DeepMessages = {
     moveRight: "Move right",
     removeColumn: "Remove column",
     itemCount: "{n} items",
+    itemCountOne: "1 item",
   },
   item: {
     type: "Type",
