@@ -1,7 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { useCreateProject } from "@/entities/project/api";
+import { useCreateProject, useProjects } from "@/entities/project/api";
+import { suggestProjectKey } from "@/features/project/model";
 import { useI18n } from "@/shared/i18n";
 import { Button } from "@/shared/ui/button";
 import { Dialog } from "@/shared/ui/dialog";
@@ -35,10 +37,28 @@ export function CreateProjectDialog({
   const { t } = useI18n();
   const toast = useToast();
   const createProject = useCreateProject(workspaceId);
+  const projects = useProjects(workspaceId);
+  const [keyTouched, setKeyTouched] = useState(false);
   const form = useForm<ProjectValues>({
     resolver: zodResolver(schema),
-    values: { name: "", key: "", mode: "POINTS" },
+    defaultValues: { name: "", key: "", mode: "POINTS" },
   });
+  const name = form.watch("name");
+
+  useEffect(() => {
+    if (open) {
+      setKeyTouched(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (keyTouched) {
+      return;
+    }
+    const taken = new Set((projects.data ?? []).map((project) => project.key));
+    const suggestion = suggestProjectKey(name, taken);
+    form.setValue("key", suggestion, { shouldValidate: suggestion.length >= 2 });
+  }, [form, keyTouched, name, projects.data]);
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -87,7 +107,11 @@ export function CreateProjectDialog({
               id="project-key"
               className="uppercase"
               maxLength={10}
-              {...form.register("key")}
+              {...form.register("key", {
+                onChange: () => {
+                  setKeyTouched(true);
+                },
+              })}
             />
           </Field>
           <Field label={t("item.points")} htmlFor="project-mode">
