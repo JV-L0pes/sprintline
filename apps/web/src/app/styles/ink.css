@@ -502,6 +502,7 @@
 /* --------------------------------------------------------------- forms --- */
 .field {
   display: grid;
+  align-content: start;
   gap: 0.35rem;
 }
 
@@ -520,6 +521,7 @@
   background: transparent;
   padding: 0.6rem 0.7rem;
   font-size: 0.92rem;
+  line-height: 1.5;
   width: 100%;
   transition: border-color 0.3s var(--ease);
 }
