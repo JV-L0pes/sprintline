@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/JV-L0pes/sprintline/actions/workflows/ci.yml/badge.svg)](https://github.com/JV-L0pes/sprintline/actions/workflows/ci.yml)
 
-**English:** Sprintline is an agile tracking platform: an internal Jira-style kanban/backlog feeds an append-only event log from which burndown, velocity, CFD and flow metrics are computed. The backend is a modular monolith (FastAPI + DDD bounded contexts); the frontend is a React/Vite SPA built with the "Ink" design system (Tailwind v4). See `docs/` for architecture decisions.
+**English:** [README.en.md](README.en.md) — Sprintline is an agile tracking platform: an internal Jira-style kanban/backlog feeds an append-only event log from which burndown, velocity, CFD and flow metrics are computed. The backend is a modular monolith (FastAPI + DDD bounded contexts); the frontend is a React/Vite SPA built with the "Ink" design system (Tailwind v4).
 
 > Codename interno: `cadencia` (pacotes `@cadencia/*`, pacote Python `cadencia`, envs `CADENCIA_*`).
 
@@ -31,7 +31,7 @@ apps/api   FastAPI + SQLAlchemy async (monolito modular: identity, work, metrics
 docs/      plano de revamp, ADRs, catálogo de regras e runbook
 ```
 
-Decisões completas em [`docs/adr/`](docs/adr/) e o catálogo normativo de regras em [`docs/domain/catalogo.md`](docs/domain/catalogo.md).
+Decisões completas em [`docs/adr/`](docs/adr/), catálogo normativo de regras em [`docs/domain/catalogo.md`](docs/domain/catalogo.md), o **case study** em [`docs/case-study.md`](docs/case-study.md) e o histórico de mudanças em [CHANGELOG.md](CHANGELOG.md).
 
 ## Rodando localmente
 
