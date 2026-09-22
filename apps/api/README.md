@@ -43,7 +43,7 @@ uv run alembic upgrade head        # aplica schema (Postgres/Neon)
 uv run alembic revision --autogenerate -m "descrição"
 ```
 
-A migração `0001` e metadata-driven; as seguintes devem ser autogeradas contra Postgres.
+A migração `0001` é metadata-driven; as seguintes devem ser autogeradas contra Postgres.
 
 ## Deploy (Vercel + Neon)
 

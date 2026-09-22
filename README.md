@@ -16,11 +16,12 @@
 
 O projeto nasceu como um burndown chart estático (veja `docs/PLANO-REVAMP.md` para o diagnóstico completo do legado) e foi reescrito como uma plataforma de tracking:
 
-- **Kanban interno** estilo Jira: projetos, board por categorias (To Do / In Progress / Done), work items hierárquicos (Epic › Story/Task/Bug › Subtask), story points Fibonacci, WIP limits, backlog com drag-and-drop.
+- **Kanban interno** estilo Jira: projetos, board com colunas configuráveis (nome, WIP, ordem e categoria de status), work items hierárquicos (Epic › Story/Task/Bug › Subtask), story points Fibonacci, backlog com drag-and-drop.
 - **Sprints com Scrum Guide 2020**: planejamento, objetivo obrigatório, uma sprint ativa por board, conclusão com carryover explícito.
 - **Métricas do event log** (`RM-01..RM-15`): burndown (dias úteis, linha ideal, mudanças de escopo visíveis), burnup, velocity, CFD, cycle/lead time com percentis p50/p85/p95.
 - **Integrações Jira Cloud e Trello**: Jira via OAuth 2.0 3LO (descoberta de campos de story points, import paginado/idempotente, webhooks deduplicados); Trello via API key do app + autorização do usuário (boards → projetos, listas → colunas por heurística, cards → itens, story points lidos de `(N)` no nome, webhooks por board).
-- **Multi-workspace** com papéis (owner/admin/member/viewer), convites por link e i18n pt-BR/en.
+- **Multi-workspace** com papéis (owner/admin/member/viewer), troca rápida pela barra lateral, convites por link e i18n pt-BR/en.
+- **Ciclo de vida completo**: arquivamento de projetos e itens (soft delete com histórico preservado) e exclusão real de workspace pelo owner (cascata completa, LGPD); nome/fuso do workspace editáveis e membros em página própria.
 
 ## Arquitetura
 
@@ -65,14 +66,14 @@ e/ou `CADENCIA_TRELLO_API_KEY`.
 pnpm exec biome check .                 # formatação + lint base (JS/TS/JSON)
 pnpm --filter @cadencia/web lint        # ESLint type-aware + a11y + hooks
 pnpm --filter @cadencia/web exec tsc -b --noEmit
-pnpm --filter @cadencia/web test:unit   # 29 testes Vitest + Testing Library + MSW
+pnpm --filter @cadencia/web test:unit   # 35 testes Vitest + Testing Library
 pnpm --filter @cadencia/web build
 
 cd apps/api
 uv run ruff check . && uv run ruff format --check .
 uv run mypy
 uv run lint-imports                     # fronteiras entre bounded contexts
-uv run pytest                           # 108 testes: unit, integration, e2e de API
+uv run pytest                           # 128 testes: unit, integration, e2e de API
 ```
 
 E2E real (Playwright sobe API+seed+web sozinho):
@@ -104,14 +105,17 @@ cd ../web && npx vercel link         # crie o projeto sprintline-web
    Entry: `api/index.py` (ASGI detectado automaticamente; deps via `requirements.txt`).
    Depois do deploy, crie o primeiro owner: `uv run python scripts/create_admin.py --email ... --name ...`.
 3. **Envs do web** (sprintline-web): nenhuma obrigatória (proxy same-origin); opcional `VITE_API_URL`.
-4. **Deploy**: `npx vercel --prod` em cada pasta — ou conecte os dois projetos ao repo e deixe o Git cuidar.
+4. **Deploy**: conecte os dois projetos ao repositório (deploy automático a cada push) — ou
+   `npx vercel --prod` na raiz do repo após `npx vercel link --project sprintline-api|sprintline-web`
+   (com Root Directory configurado, o CLI precisa rodar da raiz). Se um push não gerar deploy,
+   confira `npx vercel ls <projeto>` e dispare manualmente.
 5. **Migrações**: `CADENCIA_DATABASE_URL=<neon> uv run alembic upgrade head` (local/CI; nunca no cold start).
 6. **Jira**: crie um app 3LO em https://developer.atlassian.com/console/myapps/ com redirect
    `https://sprintline-api.vercel.app/api/v1/integrations/jira/callback` e configure `CADENCIA_JIRA_CLIENT_ID/SECRET`.
 7. **Trello**: crie uma API key em https://trello.com/power-ups/admin e configure `CADENCIA_TRELLO_API_KEY`;
    o usuário autoriza pelo próprio app (o token volta para `/integrations/trello/callback`).
 
-Detalhes operacionais em [`docs/runbook/operação.md`](docs/runbook/operação.md).
+Detalhes operacionais em [`docs/runbook/operacao.md`](docs/runbook/operacao.md).
 
 ## Estrutura de pastas
 
@@ -125,11 +129,12 @@ apps/api/src/cadencia/
   integrations/      Jira OAuth/import/webhooks
 apps/web/src/
   app/ pages/ widgets/ features/ entities/ shared/    (FSD)
+packages/tsconfig   presets de tsconfig compartilhados
 ```
 
 ## Roadmap
 
-Fases 0–7 em [`docs/PLANO-REVAMP.md`](docs/PLANO-REVAMP.md#10-roadmap-por-fases). Concluído nesta entrega: fundação, identidade/tenancy, work management, kanban/backlog, métricas e a base da integração Jira. Próximo: registração de webhooks + reconciliação noturna, snapshots via cron, hardening (Sentry, k6) e forecasting Monte Carlo.
+Fases 0–7 em [`docs/PLANO-REVAMP.md`](docs/PLANO-REVAMP.md#10-roadmap-por-fases). **Fases 0–6 entregues** e em produção privada, com o conector **Trello** antecipado da Fase 7 (webhooks Jira/Trello já ativos, com dedupe). Pendente da visão original: snapshots de métricas via cron + reconciliação noturna, notificações, export CSV/PDF, API pública com tokens, forecasting Monte Carlo e hardening extra (Sentry, k6).
 
 ## Licença
 

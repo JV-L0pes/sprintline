@@ -6,7 +6,7 @@
 |---|---|---|---|
 | Local | `pnpm web:dev` (`:5173`, proxy `/api`) | `uv run uvicorn cadencia.main:app --reload` (`:8000`) | SQLite `apps/api/cadencia.db` |
 | Preview (PR) | Vercel Preview | Vercel Preview | Branch Neon efêmera (ou `dev`) |
-| Produção | Vercel | Vercel (Mangum) | Neon `main` (endpoint `-pooler`) |
+| Produção | Vercel | Vercel (ASGI nativo via `api/index.py`) | Neon `main` (endpoint `-pooler`) |
 
 ## Variáveis de ambiente da API
 
@@ -44,7 +44,7 @@ uv run alembic downgrade -1                       # rollback de uma revisão
 
 Nunca rode migrações no cold start da função serverless. Em produção: job do CI ou execução manual controlada.
 
-## Cron noturno (Fase 5+)
+## Cron noturno (planejado, ainda não implementado)
 
 Job diário na Vercel (plano Hobby permite 2 crons/dia) deve:
 1. Materializar snapshots de métricas de sprints ativas (`(sprint_id, date)` idempotente, reprocessa dias ausentes).
@@ -65,9 +65,10 @@ Job diário na Vercel (plano Hobby permite 2 crons/dia) deve:
 | Burndown vazio | sprint sem items/eventos | verificar `domain_events` da sprint; rodar seed de novo em dev |
 | Import Jira parado | job `FAILED`/`PENDING` | `GET .../jobs` mostra `last_error`; re-rodar lote (`/run`) |
 | WIP não bloqueia | projeto em modo `SOFT` | é intencional (alerta); `HARD` bloqueia |
+| Push não gerou deploy | integração Git da Vercel instável (incidente) ou webhook perdido | `npx vercel ls <projeto>`; dispare manualmente: `npx vercel link --project <projeto>` na raiz do repo e `npx vercel --prod` (o CLI respeita o Root Directory) |
 
 ## Higiene
 
 - Rotação de segredos: JWT exige re-login em massa; planeje janela.
-- Purge de workspace (LGPD): cascata completa via `ON DELETE CASCADE` (sessions, events, tokens).
+- Purge de workspace (LGPD): owner exclui pela lixeira na home (confirma digitando o nome) ou `DELETE /api/v1/workspaces/{id}`; cascata completa (projetos, itens, sprints, integrações, sessions, eventos) com limpeza de organização órfã.
 - Logs: JSON em produção (`platform/logging.py`); nunca logar tokens/senhas (wrappers não expõem PII).

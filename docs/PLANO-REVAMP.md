@@ -7,6 +7,14 @@
 > Mudanças de rumo após o plano: instância **invite-only** sem demo pública (ADR 0010),
 > Turborepo removido (nota no ADR 0001), entry da Vercel é ASGI nativo (ADR 0007), Trello
 > adicionado além do Jira (ADR 0009).
+>
+> **Status 2026-09-21 (final):** rodada de validação de produto concluída — exclusão de workspace
+> (owner) e arquivamento de projeto/item (RN-33..35), edição de nome/fuso do workspace (RN-36),
+> membros e configurações em páginas próprias com troca de workspace na barra lateral, categorias
+> de coluna editáveis com guarda de cobertura (RN-30) e chave de projeto derivada do nome.
+> Decisões da §13: itens 1–2 resolvidos (repositório `sprintline`; rate limit em Postgres via
+> `rate_limit_hits`); 3–5 seguem em aberto. Fontes finais: `README.md`, catálogo em
+> `docs/domain/catalogo.md` e runbook em `docs/runbook/operacao.md`.
 
 ---
 
