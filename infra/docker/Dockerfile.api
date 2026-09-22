@@ -1,5 +1,5 @@
 # Imagem da API — portabilidade para qualquer host de containers (Fly.io, Render, VPS).
-# Na Vercel o deploy usa o runtime Python + api/index.py (Mangum); esta imagem e o plano B.
+# Na Vercel o deploy usa o runtime Python + api/index.py (ASGI nativo); esta imagem é o plano B.
 FROM python:3.12-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
