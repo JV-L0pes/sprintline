@@ -69,7 +69,7 @@ pydantic-core==2.46.5
     # via pydantic
 pydantic-settings==2.15.0
     # via cadencia-api
-pyjwt==2.14.0
+pyjwt==2.15.0
     # via cadencia-api
 python-dotenv==1.2.3
     # via
